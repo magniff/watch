@@ -1,6 +1,7 @@
 import pytest
 
-from hoy.attrs import (
+
+from watch import (
     BaseAutoAttributedClass, Integer, String, ArrayOf, SomeOf,
     TypeCheckerChecker
 )

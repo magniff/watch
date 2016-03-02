@@ -15,7 +15,10 @@ setup(
     version='0.1',
     license='MIT license',
     platforms=['unix', 'linux', 'osx', 'win32'],
+    setup_requires=[],
+    tests_require=['pytest'],
     author='magniff',
     classifiers=classifiers,
     packages=['watch'],
+    zip_safe=False,
 )
