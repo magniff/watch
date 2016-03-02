@@ -58,7 +58,7 @@ class Pred(BaseAutoAttributedClass, PredicateController):
 
 
 class ArrayOf(BaseAutoAttributedClass, PredicateController):
-    inner_type = TypeCheckerChecker
+    inner_type = Pred(lambda value: isinstance(value, PredicateController))
 
     def predicate(self, value):
         return (

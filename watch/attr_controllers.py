@@ -12,19 +12,13 @@ class AttributeDescriptor:
 
 
 class PredicateController(AttributeDescriptor):
-    predicate = (lambda *args, **kwargs: True)
-
-    def _complain(self, obj, value):
-        raise AttributeError(
-            "Cant set attribute '%s' of object %s to be %s." %
-            (self.field_name, obj, repr(value))
-        )
+    predicate = None
 
     def __set__(self, obj, value):
         if self.predicate(value):
             super().__set__(obj, value)
         else:
-            self._complain(obj, value)
+            obj.complain(self.field_name, value, self)
 
     def __call__(self):
         return self
@@ -34,20 +28,19 @@ class BaseTypeChecker(PredicateController):
     type_to_check = None
 
     def predicate(self, value_to_check):
-        return (
-            isinstance(value_to_check, self.type_to_check) and
-            super().predicate(value_to_check)
-        )
+        return isinstance(value_to_check, self.type_to_check)
 
 
 class AttributeControllerMeta(type):
 
     def __new__(cls, name, bases, attrs):
+
         for name, value in attrs.items():
             value_is_descriptor_class = (
                 isinstance(value, type) and
                 issubclass(value, AttributeDescriptor)
             )
+
             if value_is_descriptor_class:
                 value = value()
                 attrs[name] = value
@@ -59,4 +52,10 @@ class AttributeControllerMeta(type):
 
 
 class BaseAutoAttributedClass(metaclass=AttributeControllerMeta):
-    pass
+
+    def complain(self, field_name, value, controller):
+        raise AttributeError(
+            "Cant set attribute '%s' of object %s to be %s." %
+            (field_name, self, repr(value))
+        )
+

@@ -118,6 +118,28 @@ def test_someof1():
         instance.foo = {1: 2}
 
 
+def test_someof2():
+    class MyClass(BaseAutoAttributedClass):
+        foo = SomeOf(
+            ArrayOf(CombineFrom(Integer, Pred(lambda value: value < 5))),
+            ArrayOf(CombineFrom(Integer, Pred(lambda value: value > 10))),
+        )
+
+    instance = MyClass()
+
+    instance.foo = [1, 2, 3]
+    assert instance.foo == [1, 2, 3]
+
+    instance.foo = [20, 30, 40]
+    assert instance.foo == [20, 30, 40]
+
+    with pytest.raises(AttributeError):
+        instance.foo = [1, 2, 100]
+
+    with pytest.raises(AttributeError):
+        instance.foo = [100, 200, -1]
+
+
 def test_array_of_checkers():
     class MyClass(BaseAutoAttributedClass):
         foo = ArrayOf(TypeCheckerChecker)
@@ -143,7 +165,7 @@ def test_pred():
         instance.foo = 5
 
 
-def test_combine_from():
+def test_combine_from0():
     class MyClass(BaseAutoAttributedClass):
         foo = CombineFrom(
             Integer,
@@ -160,3 +182,24 @@ def test_combine_from():
 
     with pytest.raises(AttributeError):
         instance.foo = 25
+
+
+def test_combine_from1():
+    class MyClass(BaseAutoAttributedClass):
+        foo = CombineFrom(
+            String,
+            Pred(lambda value: len(value) > 3),
+            Pred(lambda value: len(value) < 6),
+            Pred(lambda value: value == value[::-1])
+        )
+
+    instance = MyClass()
+    instance.foo = "abba"
+    assert instance.foo == "abba"
+
+    with pytest.raises(AttributeError):
+        instance.foo = "aba"
+
+    with pytest.raises(AttributeError):
+        instance.foo = "abcddcba"
+
