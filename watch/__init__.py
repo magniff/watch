@@ -14,12 +14,24 @@ class Integer(BaseTypeChecker):
     type_to_check = int
 
 
+class Float(BaseTypeChecker):
+    type_to_check = float
+
+
+class Complex(BaseTypeChecker):
+    type_to_check = complex
+
+
 class Boolean(BaseTypeChecker):
     type_to_check = bool
 
 
 class String(BaseTypeChecker):
     type_to_check = str
+
+
+class Bytes(BaseTypeChecker):
+    type_to_check = bytes
 
 
 class Mapping(BaseTypeChecker):
@@ -38,6 +50,13 @@ class TypeCheckerChecker(BaseTypeChecker):
     type_to_check = PredicateController
 
 
+class Pred(BaseAutoAttributedClass, PredicateController):
+    predicate = Callable
+
+    def __init__(self, predicate):
+        self.predicate = predicate
+
+
 class ArrayOf(BaseAutoAttributedClass, PredicateController):
     inner_type = TypeCheckerChecker
 
@@ -51,13 +70,18 @@ class ArrayOf(BaseAutoAttributedClass, PredicateController):
         self.inner_type = inner_type()
 
 
-class SomeOf(BaseAutoAttributedClass, PredicateController):
+class BaseCombinator(BaseAutoAttributedClass, PredicateController):
     inner_types = ArrayOf(TypeCheckerChecker)
 
+    def __init__(self, *inner_types):
+        self.inner_types = tuple(controller() for controller in inner_types)
+
+
+class SomeOf(BaseCombinator):
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
-    def __init__(self, *inner_types):
-        self.inner_types = tuple(
-            controller() for controller in inner_types
-        )
+
+class CombineFrom(BaseCombinator):
+    def predicate(self, value):
+        return all(checker.predicate(value) for checker in self.inner_types)

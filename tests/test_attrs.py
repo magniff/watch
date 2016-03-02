@@ -3,7 +3,7 @@ import pytest
 
 from watch import (
     BaseAutoAttributedClass, Integer, String, ArrayOf, SomeOf,
-    TypeCheckerChecker
+    CombineFrom, Pred, TypeCheckerChecker
 )
 
 
@@ -129,3 +129,34 @@ def test_array_of_checkers():
 
     with pytest.raises(AttributeError):
         instance.foo = 10
+
+
+def test_pred():
+    class MyClass(BaseAutoAttributedClass):
+        foo = Pred(lambda value: value > 10)
+
+    instance = MyClass()
+    instance.foo = 20
+    assert instance.foo == 20
+
+    with pytest.raises(AttributeError):
+        instance.foo = 5
+
+
+def test_combine_from():
+    class MyClass(BaseAutoAttributedClass):
+        foo = CombineFrom(
+            Integer,
+            Pred(lambda value: value > 10),
+            Pred(lambda value: value < 20)
+        )
+
+    instance = MyClass()
+    instance.foo = 15
+    assert instance.foo == 15
+
+    with pytest.raises(AttributeError):
+        instance.foo = 5
+
+    with pytest.raises(AttributeError):
+        instance.foo = 25

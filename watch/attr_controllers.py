@@ -2,7 +2,9 @@ class AttributeDescriptor:
 
     def __get__(self, obj, _=None):
         if self.field_name not in obj.__dict__:
-            raise AttributeError(self.field_name)
+            raise AttributeError(
+                "Object %s has no attribute '%s'." % (obj, self.field_name)
+            )
         return obj.__dict__[self.field_name]
 
     def __set__(self, obj, value):
@@ -13,7 +15,10 @@ class PredicateController(AttributeDescriptor):
     predicate = (lambda *args, **kwargs: True)
 
     def _complain(self, obj, value):
-        raise AttributeError()
+        raise AttributeError(
+            "Cant set attribute '%s' of object %s to be %s." %
+            (self.field_name, obj, repr(value))
+        )
 
     def __set__(self, obj, value):
         if self.predicate(value):
