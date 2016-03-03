@@ -1,4 +1,4 @@
-# Watch
+# Watch 👁
 
 This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this peace of code represents a tiny framework aimed to build object's attributes validators. Usage is fairly straight forward, check out:
 
