@@ -2,7 +2,7 @@ import pytest
 
 
 from watch import (
-    WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, TypeCheckerChecker
+    WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, TypeCheckerChecker, Mapping
 )
 
 
@@ -221,3 +221,21 @@ def test_combine_from1():
 
     with pytest.raises(AttributeError):
         instance.foo = "abcddcba"
+
+
+def test_mapping():
+    class MyClass(WatchMe):
+        foo = Mapping(
+            keys_type=Pred(lambda item: isinstance(item, str)),
+            values_type=Pred(lambda item: isinstance(item, int))
+        )
+
+    instance = MyClass()
+    instance.foo = {"hello": 1}
+    assert instance.foo == {"hello": 1}
+
+    with pytest.raises(AttributeError):
+        instance.foo = "aba"
+
+    with pytest.raises(AttributeError):
+        instance.foo = {"hello": "world"}
