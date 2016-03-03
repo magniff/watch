@@ -1,4 +1,4 @@
-from setuptools import setup
+import setuptools
 
 
 classifiers = [
@@ -9,14 +9,12 @@ classifiers = [
 ]
 
 
-setup(
+setuptools.setup(
     name='watch',
     description='Attribute controlling microframework.',
     version='0.1',
     license='MIT license',
     platforms=['unix', 'linux', 'osx', 'win32'],
-    setup_requires=[],
-    tests_require=['pytest'],
     author='magniff',
     url='https://github.com/magniff/watch',
     classifiers=classifiers,

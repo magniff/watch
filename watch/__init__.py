@@ -29,7 +29,7 @@ class ArrayOf(WatchMe, PredicateController):
         self.inner_type = inner_type()
 
 
-class Mapping(WatchMe, PredicateController):
+class MappingOf(WatchMe, PredicateController):
     keys_type = Pred(lambda item: isinstance(item, PredicateController))
     values_type = Pred(lambda item: isinstance(item, PredicateController))
 

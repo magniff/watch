@@ -1,7 +1,7 @@
 import pytest
 
 
-from watch import (WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, Mapping)
+from watch import (WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, MappingOf)
 
 
 def test_attr_simple():
@@ -195,9 +195,9 @@ def test_combine_from1():
         instance.foo = "abcddcba"
 
 
-def test_mapping():
+def test_MappingOf():
     class MyClass(WatchMe):
-        foo = Mapping(
+        foo = MappingOf(
             keys_type=Pred(lambda item: isinstance(item, str)),
             values_type=Pred(lambda item: isinstance(item, int))
         )
@@ -213,9 +213,9 @@ def test_mapping():
         instance.foo = {"hello": "world"}
 
 
-def test_mapping_array_cant_init_with_noncontroller():
+def test_MappingOf_array_cant_init_with_noncontroller():
 
     with pytest.raises(AttributeError):
-        Mapping(keys_type=int)
-        Mapping(keys_type=10)
+        MappingOf(keys_type=int)
+        MappingOf(keys_type=10)
         ArrayOf(keys_type=int)
