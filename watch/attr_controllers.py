@@ -24,13 +24,6 @@ class PredicateController(AttributeDescriptor):
         return self
 
 
-class BaseTypeChecker(PredicateController):
-    type_to_check = None
-
-    def predicate(self, value_to_check):
-        return isinstance(value_to_check, self.type_to_check)
-
-
 class AttributeControllerMeta(type):
 
     def __new__(cls, name, bases, attrs):

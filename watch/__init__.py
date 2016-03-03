@@ -1,11 +1,20 @@
-from . import primitives
-from .attr_controllers import (
-    WatchMe, BaseTypeChecker, PredicateController
-)
+from collections.abc import Callable as _Callable
+from .attr_controllers import WatchMe, PredicateController
+
+
+class Callable(PredicateController):
+    def predicate(self, value):
+        return isinstance(value, _Callable)
+
+
+class TypeCheckerChecker(PredicateController):
+    def predicate(self, value):
+        return isinstance(value, PredicateController)
 
 
 class Pred(WatchMe, PredicateController):
-    predicate = primitives.Callable
+
+    predicate = Callable
 
     def __init__(self, predicate):
         self.predicate = predicate
@@ -25,7 +34,7 @@ class ArrayOf(WatchMe, PredicateController):
 
 
 class BaseCombinator(WatchMe, PredicateController):
-    inner_types = ArrayOf(primitives.TypeCheckerChecker)
+    inner_types = ArrayOf(TypeCheckerChecker)
 
     def __init__(self, *inner_types):
         self.inner_types = tuple(controller() for controller in inner_types)
