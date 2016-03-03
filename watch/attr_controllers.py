@@ -51,4 +51,3 @@ class WatchMe(metaclass=AttributeControllerMeta):
             "Cant set attribute '%s' of object %s to be %s." %
             (field_name, self, repr(value))
         )
-

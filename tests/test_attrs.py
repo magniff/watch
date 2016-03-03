@@ -1,9 +1,7 @@
 import pytest
 
 
-from watch import (
-    WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, TypeCheckerChecker, Mapping
-)
+from watch import (WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, Mapping)
 
 
 def test_attr_simple():
@@ -31,19 +29,6 @@ def test_array_of():
 
     with pytest.raises(AttributeError):
         instance.foo = [1, 2, "hello world"]
-
-
-def test_type_checker_checker():
-    class MyClass(WatchMe):
-        foo = TypeCheckerChecker
-
-    Integer = Pred(lambda item: isinstance(item, int))()
-    instance = MyClass()
-    instance.foo = Integer
-    assert instance.foo == Integer
-
-    with pytest.raises(AttributeError):
-        instance.foo = 10
 
 
 def test_array_of_array_of():
@@ -159,19 +144,6 @@ def test_someof3():
         instance.foo = [100, 200, -1]
 
 
-def test_array_of_checkers():
-    class MyClass(WatchMe):
-        foo = ArrayOf(TypeCheckerChecker)
-
-    instance = MyClass()
-    pass_into = (Pred(lambda item: isinstance(item, int)),)
-    instance.foo = pass_into
-    assert instance.foo == pass_into
-
-    with pytest.raises(AttributeError):
-        instance.foo = 10
-
-
 def test_pred():
     class MyClass(WatchMe):
         foo = Pred(lambda value: value > 10)
@@ -239,3 +211,11 @@ def test_mapping():
 
     with pytest.raises(AttributeError):
         instance.foo = {"hello": "world"}
+
+
+def test_mapping_array_cant_init_with_noncontroller():
+
+    with pytest.raises(AttributeError):
+        Mapping(keys_type=int)
+        Mapping(keys_type=10)
+        ArrayOf(keys_type=int)
