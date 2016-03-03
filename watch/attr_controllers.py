@@ -18,7 +18,7 @@ class PredicateController(AttributeDescriptor):
         if self.predicate(value):
             super().__set__(obj, value)
         else:
-            obj.complain(self.field_name, value, self)
+            obj.complain(self.field_name, value)
 
     def __call__(self):
         return self
@@ -51,9 +51,9 @@ class AttributeControllerMeta(type):
         return super().__new__(cls, name, bases, attrs)
 
 
-class BaseAutoAttributedClass(metaclass=AttributeControllerMeta):
+class WatchMe(metaclass=AttributeControllerMeta):
 
-    def complain(self, field_name, value, controller):
+    def complain(self, field_name, value):
         raise AttributeError(
             "Cant set attribute '%s' of object %s to be %s." %
             (field_name, self, repr(value))

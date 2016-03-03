@@ -1,14 +1,15 @@
 import pytest
 
 
+from watch.primitives import Integer, String, TypeCheckerChecker
+
 from watch import (
-    BaseAutoAttributedClass, Integer, String, ArrayOf, SomeOf,
-    CombineFrom, Pred, TypeCheckerChecker
+    WatchMe, ArrayOf, SomeOf, CombineFrom, Pred
 )
 
 
 def test_attr_simple():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = Integer
 
     instance = MyClass()
@@ -20,7 +21,7 @@ def test_attr_simple():
 
 
 def test_array_of():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = ArrayOf(Integer)
 
     instance = MyClass()
@@ -35,7 +36,7 @@ def test_array_of():
 
 
 def test_type_checker_checker():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = TypeCheckerChecker
 
     integer = Integer()
@@ -48,7 +49,7 @@ def test_type_checker_checker():
 
 
 def test_array_of_array_of():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = ArrayOf(ArrayOf(Integer))
 
     instance = MyClass()
@@ -60,7 +61,7 @@ def test_array_of_array_of():
 
 
 def test_array_of_some_of():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = ArrayOf(SomeOf(Integer, String, ArrayOf(Integer)))
 
     instance = MyClass()
@@ -75,7 +76,7 @@ def test_array_of_some_of():
 
 
 def test_someof0():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = SomeOf(Integer)
 
     instance = MyClass()
@@ -87,7 +88,7 @@ def test_someof0():
 
 
 def test_someof0():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = SomeOf(Integer, String)
 
     instance = MyClass()
@@ -103,7 +104,7 @@ def test_someof0():
 
 
 def test_someof1():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = SomeOf(SomeOf(SomeOf(SomeOf(Integer, String))))
 
     instance = MyClass()
@@ -119,7 +120,7 @@ def test_someof1():
 
 
 def test_someof2():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = SomeOf(
             ArrayOf(CombineFrom(Integer, Pred(lambda value: value < 5))),
             ArrayOf(CombineFrom(Integer, Pred(lambda value: value > 10))),
@@ -141,7 +142,7 @@ def test_someof2():
 
 
 def test_array_of_checkers():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = ArrayOf(TypeCheckerChecker)
 
     instance = MyClass()
@@ -154,7 +155,7 @@ def test_array_of_checkers():
 
 
 def test_pred():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = Pred(lambda value: value > 10)
 
     instance = MyClass()
@@ -166,7 +167,7 @@ def test_pred():
 
 
 def test_combine_from0():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = CombineFrom(
             Integer,
             Pred(lambda value: value > 10),
@@ -185,7 +186,7 @@ def test_combine_from0():
 
 
 def test_combine_from1():
-    class MyClass(BaseAutoAttributedClass):
+    class MyClass(WatchMe):
         foo = CombineFrom(
             String,
             Pred(lambda value: len(value) > 3),

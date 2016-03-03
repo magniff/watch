@@ -18,6 +18,7 @@ setup(
     setup_requires=[],
     tests_require=['pytest'],
     author='magniff',
+    url='https://github.com/magniff/watch',
     classifiers=classifiers,
     packages=['watch'],
     zip_safe=False,

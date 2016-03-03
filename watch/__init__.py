@@ -1,63 +1,17 @@
-from collections.abc import (
-    Callable as _Callable, Iterable as _Iterable, Mapping as _Mapping
-)
+from . import primitives
 from .attr_controllers import (
-    BaseAutoAttributedClass, BaseTypeChecker, PredicateController
+    WatchMe, BaseTypeChecker, PredicateController
 )
 
 
-class Callable(BaseTypeChecker):
-    type_to_check = _Callable
-
-
-class Integer(BaseTypeChecker):
-    type_to_check = int
-
-
-class Float(BaseTypeChecker):
-    type_to_check = float
-
-
-class Complex(BaseTypeChecker):
-    type_to_check = complex
-
-
-class Boolean(BaseTypeChecker):
-    type_to_check = bool
-
-
-class String(BaseTypeChecker):
-    type_to_check = str
-
-
-class Bytes(BaseTypeChecker):
-    type_to_check = bytes
-
-
-class Mapping(BaseTypeChecker):
-    type_to_check = _Mapping
-
-
-class Iterable(BaseTypeChecker):
-    type_to_check = _Iterable
-
-
-class Null(BaseTypeChecker):
-    type_to_check = type(None)
-
-
-class TypeCheckerChecker(BaseTypeChecker):
-    type_to_check = PredicateController
-
-
-class Pred(BaseAutoAttributedClass, PredicateController):
-    predicate = Callable
+class Pred(WatchMe, PredicateController):
+    predicate = primitives.Callable
 
     def __init__(self, predicate):
         self.predicate = predicate
 
 
-class ArrayOf(BaseAutoAttributedClass, PredicateController):
+class ArrayOf(WatchMe, PredicateController):
     inner_type = Pred(lambda value: isinstance(value, PredicateController))
 
     def predicate(self, value):
@@ -70,8 +24,8 @@ class ArrayOf(BaseAutoAttributedClass, PredicateController):
         self.inner_type = inner_type()
 
 
-class BaseCombinator(BaseAutoAttributedClass, PredicateController):
-    inner_types = ArrayOf(TypeCheckerChecker)
+class BaseCombinator(WatchMe, PredicateController):
+    inner_types = ArrayOf(primitives.TypeCheckerChecker)
 
     def __init__(self, *inner_types):
         self.inner_types = tuple(controller() for controller in inner_types)
