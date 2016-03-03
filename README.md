@@ -9,6 +9,9 @@ class MyClass(WatchMe):
 ```
 henceforth attribute `foo` of `MyClass` objects owned by `Pred` descriptor, that basically does `isinstance(value, int)` every time you are setting `value` into `foo`. If `value` doesnt meet requirements of controller, then `complain(self, field_name, value)` method of `MyClass` takes control, by default there is an implementation in `WatchMe` base class, that simply raises `AttribureError`.
 
+### Installation
+You can clone this repo and perform installation by running `setup.py` script. This code also available in `pypi` by name `watch`, so to get it from there just run `pip install watch`.
+
 ### Main dudes
 Currently the main figures on the validation field are:
 ```python
@@ -30,10 +33,10 @@ class MyClass(WatchMe):
 * `MappingOf` allows to set an object that has some notion of `items()`
 ```python
 class MyClass(WatchMe):
-	# some mapping, which keys allowed to be palindromic strings; valid values are lists
+    # some mapping, which keys allowed to be palindromic strings; valid values are lists
     # of even numbers
     foo = MappingOf(
-    	keys_type=Pred(lambda item: isinstance(item, str) and item == item[::-1])),
+        keys_type=Pred(lambda item: isinstance(item, str) and item == item[::-1])),
         values_type=ArrayOf(Pred(lambda item: isinstance(item, int) and not item % 2))
     )
 ```
