@@ -219,3 +219,16 @@ def test_MappingOf_array_cant_init_with_noncontroller():
         MappingOf(keys_type=int)
         MappingOf(keys_type=10)
         ArrayOf(keys_type=int)
+
+
+def test_bind_checkers_deffered():
+    class A(WatchMe):
+        pass
+
+    A.foo = Pred(lambda item: isinstance(item, int))
+    a = A()
+    a.foo = 10
+    assert a.foo == 10
+
+    with pytest.raises(AttributeError):
+        a.foo = "aaaa"

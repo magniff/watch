@@ -26,6 +26,12 @@ class PredicateController(AttributeDescriptor):
 
 class AttributeControllerMeta(type):
 
+    def __setattr__(self, attr_name, value):
+        if isinstance(value, PredicateController):
+            value.field_name = attr_name
+
+        super().__setattr__(attr_name, value)
+
     def __new__(cls, name, bases, attrs):
 
         for name, value in attrs.items():
