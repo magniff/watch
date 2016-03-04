@@ -12,7 +12,7 @@ classifiers = [
 setuptools.setup(
     name='watch',
     description='Attribute controlling microframework.',
-    version='0.1.2',
+    version='0.1.3',
     license='MIT license',
     platforms=['unix', 'linux', 'osx', 'win32'],
     author='magniff',
