@@ -54,6 +54,27 @@ class MyClass(WatchMe):
     foo = CombineFrom(String, Pred(lambda string: string == string[::-1]))
 ```
 
+### How to control function arguments and result
+There is a thing, known as `PEP 0484`, that proposes a very abstract way of validation of functions arguments and result via annotations. Current library have some support for this pep:
+```python
+from watch import Pred, watch_this
+PositiveInteger = Pred(lambda item: isinstance(item, int) and item > 0)
+String = Pred(lambda item: isinstance(item, str))
+
+@watch_this
+def factorial(value: PositiveInteger) -> PositiveInteger:
+    return 1 if value == 1 else value * factorial(value-1)
+
+# following will raise watch.ArgumentCheckError
+>>> factorial("this is sparta")
+>>> factorial(0)
+# and
+@watch_this
+def ident_function(value) -> String:
+    return value
+>>> ident_function(10) # will raise watch.ResultCheckError
+```
+
 ### How to create custom validator
 Even though you can build rather reach validators using only stuff described above, you are welcome to create your own one. The base class of each validator is `watch.PredicateController`, that has method `predicate(value)`, that should return `True` if value fits to object and `False` otherwise. The following example demonstrates how to build validator, that checks whether this value been set earlier:
 ```python
