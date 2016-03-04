@@ -1,4 +1,7 @@
+from inspect import signature
+from functools import wraps
 from collections.abc import Callable as _Callable, Mapping as _Mapping
+
 from .attr_controllers import WatchMe, PredicateController
 
 
@@ -70,3 +73,55 @@ class CombineFrom(BaseCombinator):
 
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
+
+
+class ArgumentsBindError(TypeError):
+    pass
+
+
+class ArgumentCheckError(TypeError):
+    pass
+
+
+class ResultCheckError(TypeError):
+    pass
+
+
+def watch_this(function):
+
+    func_signature = signature(function)
+    annotations = function.__annotations__
+    return_checker = annotations.get('return', Pred(lambda item: True))
+
+    @wraps(function)
+    def decorator(*args, **kwargs):
+        try:
+            arguments = func_signature.bind(*args, **kwargs).arguments
+        except TypeError as error:
+            raise ArgumentsBindError(
+                "Failed to bind arguments args=%s, kwargs=%s passed "
+                "into function %s" % (args, kwargs, function.__name__)
+            ) from error
+
+        for name, value in arguments.items():
+            # at this point "name in annotations" is guarantied
+            checker = annotations.get(name)
+            if not checker:
+                continue
+
+            if not checker.predicate(value):
+                raise ArgumentCheckError(
+                    "Argument %s == %s of function %s failed validation." %
+                    (name, value, function.__name__)
+                )
+
+        result = function(*args, **kwargs)
+        if not return_checker.predicate(result):
+            raise ResultCheckError(
+                "Result %s of function %s failed validation." %
+                (result, function.__name__)
+            )
+
+        return result
+
+    return decorator
