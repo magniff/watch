@@ -5,7 +5,7 @@ classifiers = [
     (
         'Programming Language :: Python :: %s' % x
     )
-    for x in '3.3 3.4 3.5'.split()
+    for x in '3.1 3.2 3.3 3.4 3.5'.split()
 ]
 
 
