@@ -12,8 +12,8 @@ henceforth attribute `foo` of `MyClass` objects owned by `Pred` descriptor, that
 ### Installation
 You can clone this repo and perform installation by running `setup.py` script. This code also available in `pypi` by name `watch`, so to get it from there just run `pip install watch`.
 
-### Main dudes
-Currently the main figures on the validation field are:
+### Main validators
+Each validator is represented as a class extending base `PredicateController` type, which main method `predicate` get recursively invoked through nested data. Currently the most expressive validators are following.
 ```python
 from watch import Pred, ArrayOf, MappingOf, SomeOf, CombineFrom
 ```
@@ -53,6 +53,10 @@ class MyClass(WatchMe):
     # only palindromic strings are allowed
     foo = CombineFrom(String, Pred(lambda string: string == string[::-1]))
 ```
+Note that all of them and each validator, presenting in `watch.builtins` are self-validate, thus you can't construct `watch.builtins.InstanceOf` with non-class.
+
+### Secondary validators
+Find more stuff in `watch.buitins`.
 
 ### How to control function arguments and result
 There is a thing, known as `PEP 0484`, that proposes a very abstract way of validation of functions arguments and result via annotations. Current library have some support for this pep:
@@ -68,11 +72,20 @@ def factorial(value: PositiveInteger) -> PositiveInteger:
 # following will raise watch.ArgumentCheckError
 >>> factorial("this is sparta")
 >>> factorial(0)
-# and
+
+# resulting value is also validated
 @watch_this()
 def ident_function(value) -> String:
     return value
 >>> ident_function(10) # will raise watch.ResultCheckError
+```
+You can customize functions, handling argument and result validation fail by passing them to `watch_this` decorator. Take this as a template:
+```python
+def new_argument_fail_handler(function, argument_name, argument_value):
+    pass
+
+def new_result_fail_handler(function, args, kwargs, result):
+    pass
 ```
 
 ### How to create custom validator
