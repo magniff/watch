@@ -1,7 +1,6 @@
 import pytest
 from watch import (
-    watch_this, ArrayOf, Pred, CombineFrom,
-    ArgumentCheckError, ResultCheckError, ArgumentsBindError
+    watch_this, ArrayOf, Pred, CombineFrom, ArgumentCheckError, ResultCheckError
 )
 
 
@@ -12,11 +11,11 @@ PositiveInteger = CombineFrom(Integer, Positive)
 
 def test_returns():
 
-    @watch_this
+    @watch_this()
     def valid() -> ArrayOf(Integer):
         return [1, 2, 3]
 
-    @watch_this
+    @watch_this()
     def invalid() -> ArrayOf(Integer):
         return "hello the children!"
 
@@ -28,7 +27,7 @@ def test_returns():
 
 def test_arguments():
 
-    @watch_this
+    @watch_this()
     def factorial(value: PositiveInteger, mode=None) -> PositiveInteger:
         return 1 if value == 1 else value * factorial(value - 1)
 
@@ -43,13 +42,3 @@ def test_arguments():
 
     with pytest.raises(ArgumentCheckError):
         factorial(-10)
-
-
-def test_bind_error():
-
-    @watch_this
-    def factorial(value: PositiveInteger) -> PositiveInteger:
-        return 1 if value == 1 else value * factorial(value - 1)
-
-    with pytest.raises(ArgumentsBindError):
-        factorial(tar=10)
