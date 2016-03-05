@@ -29,6 +29,16 @@ class InstanceOf(WatchMe, PredicateController):
         self.type_to_check = type_to_check
 
 
+class Not(WatchMe, PredicateController):
+    inner_checker = InstanceOf(PredicateController)
+
+    def predicate(self, value):
+        return not self.inner_checker.predicate(value)
+
+    def __init__(self, inner_checker):
+        self.inner_checker = inner_checker
+
+
 class SubclassOf(WatchMe, PredicateController):
     type_to_check_against = InstanceOf(type)
     type_to_check = InstanceOf(type)

@@ -1,5 +1,5 @@
 import pytest
-from watch.builtins import InstanceOf, SubclassOf, HasAttr, EqualsTo
+from watch.builtins import InstanceOf, SubclassOf, HasAttr, EqualsTo, Not
 
 
 def test_instanceof():
@@ -36,3 +36,11 @@ def test_hasattr():
 def test_equals():
     assert EqualsTo(10).predicate(10)
     assert not EqualsTo(10).predicate(11)
+
+
+def test_not():
+    assert not Not(EqualsTo(10)).predicate(10)
+    assert Not(EqualsTo(10)).predicate("hello")
+
+    with pytest.raises(AttributeError):
+        Not(10)
