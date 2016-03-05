@@ -61,7 +61,7 @@ from watch import Pred, watch_this
 PositiveInteger = Pred(lambda item: isinstance(item, int) and item > 0)
 String = Pred(lambda item: isinstance(item, str))
 
-@watch_this
+@watch_this()
 def factorial(value: PositiveInteger) -> PositiveInteger:
     return 1 if value == 1 else value * factorial(value-1)
 
@@ -69,7 +69,7 @@ def factorial(value: PositiveInteger) -> PositiveInteger:
 >>> factorial("this is sparta")
 >>> factorial(0)
 # and
-@watch_this
+@watch_this()
 def ident_function(value) -> String:
     return value
 >>> ident_function(10) # will raise watch.ResultCheckError
