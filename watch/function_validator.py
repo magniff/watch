@@ -2,7 +2,7 @@ from inspect import signature
 from functools import wraps
 
 from .attr_controllers import WatchMe, PredicateController
-from .builtins import Pred, Callable
+from .builtins import Callable, Whatever
 
 
 class ArgumentCheckError(TypeError):
@@ -40,7 +40,7 @@ class EyeOn(WatchMe, PredicateController):
                     self.attr_failed(function, name, value)
 
             # ok, lets evaluate function and validate the result
-            return_checker = annotations.get('return', Pred(lambda item: True))
+            return_checker = annotations.get('return', Whatever)
             result = function(*args, **kwargs)
             if not return_checker.predicate(result):
                 self.result_failed(function, args, kwargs, result)

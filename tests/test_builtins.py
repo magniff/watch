@@ -1,5 +1,7 @@
 import pytest
-from watch.builtins import InstanceOf, SubclassOf, HasAttr, EqualsTo, Not
+from watch.builtins import (
+    InstanceOf, SubclassOf, HasAttr, EqualsTo, Not, Whatever, Nothing
+)
 
 
 def test_instanceof():
@@ -44,3 +46,10 @@ def test_not():
 
     with pytest.raises(AttributeError):
         Not(10)
+
+
+def test_whatever():
+    assert Whatever.predicate(10)
+    assert Whatever.predicate(Whatever)
+    assert not Nothing.predicate(10)
+    assert not Nothing.predicate(Whatever)

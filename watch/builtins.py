@@ -15,10 +15,6 @@ class Pred(WatchMe, PredicateController):
         self.predicate = predicate
 
 
-Whatever = Pred(lambda item: True)
-Nothing = Pred(lambda item: False)
-
-
 class InstanceOf(WatchMe, PredicateController):
     type_to_check = Pred(lambda item: isinstance(item, type))
 
@@ -37,6 +33,10 @@ class Not(WatchMe, PredicateController):
 
     def __init__(self, inner_checker):
         self.inner_checker = inner_checker
+
+
+Whatever = Pred(lambda item: True)
+Nothing = Not(Whatever)
 
 
 class SubclassOf(WatchMe, PredicateController):
