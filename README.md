@@ -56,7 +56,7 @@ class MyClass(WatchMe):
 Note that all of them and each validator, presenting in `watch.builtins` are self-validate, thus you can't construct `watch.builtins.InstanceOf` with non-class.
 
 ### Secondary validators
-Find more stuff in `watch.buitins`.
+Find more stuff in `watch.builtins`.
 
 ### How to control function arguments and result
 There is a thing, known as `PEP 0484`, that proposes a very abstract way of validation of functions arguments and result via annotations. Current library have some support for this pep:
