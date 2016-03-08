@@ -58,36 +58,6 @@ Note that all of them and each validator, presenting in `watch.builtins` are sel
 ### Secondary validators
 Find more stuff in `watch.builtins`.
 
-### How to control function arguments and result
-There is a thing, known as `PEP 0484`, that proposes a very abstract way of validation of functions arguments and result via annotations. Current library have some support for this pep:
-```python
-from watch import Pred, watch_this
-PositiveInteger = Pred(lambda item: isinstance(item, int) and item > 0)
-String = Pred(lambda item: isinstance(item, str))
-
-@watch_this()
-def factorial(value: PositiveInteger) -> PositiveInteger:
-    return 1 if value == 1 else value * factorial(value-1)
-
-# following will raise watch.ArgumentCheckError
->>> factorial("this is sparta")
->>> factorial(0)
-
-# resulting value is also validated
-@watch_this()
-def ident_function(value) -> String:
-    return value
->>> ident_function(10) # will raise watch.ResultCheckError
-```
-You can customize functions, handling argument and result validation fail by passing them to `watch_this` decorator. Take this as a template:
-```python
-def new_argument_fail_handler(function, argument_name, argument_value):
-    pass
-
-def new_result_fail_handler(function, args, kwargs, result):
-    pass
-```
-
 ### How to create custom validator
 Even though you can build rather reach validators using only stuff described above, you are welcome to create your own one. The base class of each validator is `watch.PredicateController`, that has method `predicate(value)`, that should return `True` if value fits to object and `False` otherwise. The following example demonstrates how to build validator, that checks whether this value been set earlier:
 ```python
