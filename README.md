@@ -6,6 +6,10 @@ This very basic library I found myself reimplementing over and over again in dif
 from watch import WatchMe, Pred
 class MyClass(WatchMe):
     foo = Pred(lambda item: isinstance(item, int))
+
+instance = MyClass()
+instance.foo = 10  # allowed
+instance.foo = "sup"  # will rise AttributeError, only ints are allowed
 ```
 henceforth attribute `foo` of `MyClass` objects owned by `Pred` descriptor, that basically does `isinstance(value, int)` every time you are setting `value` into `foo`. If `value` doesnt meet requirements of controller, then `complain(self, field_name, value)` method of `MyClass` takes control, by default there is an implementation in `WatchMe` base class, that simply raises `AttribureError`.
 
