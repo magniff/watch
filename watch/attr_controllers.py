@@ -1,6 +1,10 @@
 class AttributeDescriptor:
 
-    def __get__(self, obj, _=None):
+    def __get__(self, obj, klass=None):
+        # when attr being looked up in class instead of instance
+        if klass is not None and obj is None:
+            return self
+
         if self.field_name not in obj.__dict__:
             raise AttributeError(
                 "Object %s has no attribute '%s'." % (obj, self.field_name)

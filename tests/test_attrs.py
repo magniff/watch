@@ -232,3 +232,11 @@ def test_bind_checkers_deffered():
 
     with pytest.raises(AttributeError):
         a.foo = "aaaa"
+
+
+def test_attr_accesibble_from_class():
+    class A(WatchMe):
+        foo = Pred(lambda value: isinstance(value, int))
+
+    assert hasattr(A, "foo")
+
