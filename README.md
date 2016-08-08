@@ -1,11 +1,15 @@
 # Watch 👁
 
-This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this peace of code represents a tiny framework aimed to build object's attributes validators. Usage is fairly straight forward, check out:
+This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators. Usage is fairly straight forward, check out:
 
 ``` python
 from watch import WatchMe, Pred
 class MyClass(WatchMe):
     foo = Pred(lambda item: isinstance(item, int))
+
+instance = MyClass()
+instance.foo = 10  # allowed
+instance.foo = "sup"  # will rise AttributeError, only ints are allowed
 ```
 henceforth attribute `foo` of `MyClass` objects owned by `Pred` descriptor, that basically does `isinstance(value, int)` every time you are setting `value` into `foo`. If `value` doesnt meet requirements of controller, then `complain(self, field_name, value)` method of `MyClass` takes control, by default there is an implementation in `WatchMe` base class, that simply raises `AttribureError`.
 
