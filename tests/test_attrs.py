@@ -240,3 +240,20 @@ def test_attr_accesibble_from_class():
 
     assert hasattr(A, "foo")
 
+
+def test_desctiptor_field_names():
+    Some = Pred(lambda value: isinstance(value, int))
+
+    class A(WatchMe):
+        foo = Some
+
+    class B(WatchMe):
+        bar = Some
+
+    a = A()
+    b = B()
+
+    assert A.foo is not B.bar
+    assert A.foo.field_name == "foo"
+    assert B.bar.field_name == "bar"
+

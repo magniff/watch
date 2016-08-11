@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class AttributeDescriptor:
 
     def __get__(self, obj, klass=None):
@@ -49,7 +52,9 @@ class AttributeControllerMeta(type):
                 attrs[name] = value
 
             if isinstance(value, AttributeDescriptor):
+                value = deepcopy(value)
                 value.field_name = name
+                attrs[name] = value
 
         return super().__new__(cls, name, bases, attrs)
 
