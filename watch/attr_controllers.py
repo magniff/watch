@@ -2,6 +2,9 @@ from copy import deepcopy
 
 
 class AttributeDescriptor:
+    """This class express some common logic for any attribute descriptor,
+    not biggy.
+    """
 
     def __get__(self, obj, klass=None):
         # when attr being looked up in class instead of instance
@@ -19,6 +22,8 @@ class AttributeDescriptor:
 
 
 class PredicateController(AttributeDescriptor):
+    """Base class for every validator.
+    """
     predicate = None
 
     def __set__(self, obj, value):
@@ -32,6 +37,9 @@ class PredicateController(AttributeDescriptor):
 
 
 class AttributeControllerMeta(type):
+    """Basic meta for watch.WatchMe. Its main concern is to bind descriptors
+    to actual attributes in class.
+    """
 
     def __setattr__(self, attr_name, value):
         if isinstance(value, PredicateController):
@@ -60,9 +68,19 @@ class AttributeControllerMeta(type):
 
 
 class WatchMe(metaclass=AttributeControllerMeta):
+    """Inherit this class to make your class controlled by watch.
+    """
 
-    def complain(self, field_name, value):
-        raise AttributeError(
+    def generate_error_message(self, field_name, value):
+        return (
             "Cant set attribute '%s' of object %s to be %s." %
             (field_name, self, repr(value))
+        )
+
+    def complain(self, field_name, value):
+        """This method called if some field set failed validation.
+        It is up to the class to decide how to handle validation error.
+        """
+        raise AttributeError(
+            self.generate_error_message(field_name, value)
         )

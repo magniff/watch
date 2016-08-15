@@ -8,14 +8,31 @@ class Callable(PredicateController):
         return isinstance(value, abc.Callable)
 
 
+class BaseControlledValidator(WatchMe, PredicateController):
+
+    def generate_error_message(self, field_name, value):
+        return (
+            "You tried to init <%s> by something other then another "
+            "validator instance, didnt you?" % type(self).__qualname__
+        )
+
+
 class Pred(WatchMe, PredicateController):
+    """Validation based on given 'predicate' function.
+    """
     predicate = Callable
 
     def __init__(self, predicate):
         self.predicate = predicate
 
+    def generate_error_message(self, field_name, value):
+        return (
+            "Init <%s> by callable, that takes one arg and returns bool." %
+            type(self).__qualname__
+        )
 
-class InstanceOf(WatchMe, PredicateController):
+
+class InstanceOf(BaseControlledValidator):
     type_to_check = Pred(lambda item: isinstance(item, type))
 
     def predicate(self, value):
@@ -25,7 +42,9 @@ class InstanceOf(WatchMe, PredicateController):
         self.type_to_check = type_to_check
 
 
-class Not(WatchMe, PredicateController):
+class Not(BaseControlledValidator):
+    """Negates the result of nested validator.
+    """
     inner_checker = InstanceOf(PredicateController)
 
     def predicate(self, value):
@@ -39,7 +58,7 @@ Whatever = Pred(lambda item: True)
 Nothing = Not(Whatever)
 
 
-class SubclassOf(WatchMe, PredicateController):
+class SubclassOf(BaseControlledValidator):
     type_to_check_against = InstanceOf(type)
     type_to_check = InstanceOf(type)
 
@@ -56,7 +75,9 @@ class SubclassOf(WatchMe, PredicateController):
         self.type_to_check_against = type_to_check_against
 
 
-class HasAttr(WatchMe, PredicateController):
+class HasAttr(BaseControlledValidator):
+    """Checks that value has given attribute.
+    """
     attr_name = InstanceOf(str)
 
     def predicate(self, value):
@@ -66,7 +87,7 @@ class HasAttr(WatchMe, PredicateController):
         self.attr_name = attr_name
 
 
-class EqualsTo(WatchMe, PredicateController):
+class EqualsTo(BaseControlledValidator):
     test_against = HasAttr('__eq__')
 
     def predicate(self, value):
@@ -76,7 +97,10 @@ class EqualsTo(WatchMe, PredicateController):
         self.test_against = test_against
 
 
-class ArrayOf(WatchMe, PredicateController):
+class ArrayOf(BaseControlledValidator):
+    """List or tuple of stuff, every item of which passed to additional
+    inner_type validator, for example ArrayOf(Pred(lambda value: value == 5))
+    """
     inner_type = InstanceOf(PredicateController)
 
     def predicate(self, value):
@@ -89,7 +113,10 @@ class ArrayOf(WatchMe, PredicateController):
         self.inner_type = inner_type()
 
 
-class MappingOf(WatchMe, PredicateController):
+class MappingOf(BaseControlledValidator):
+    """Pretty much what you expect - maps keys to values, which are
+    controlled by keys_type and values_type validator respectively.
+    """
     keys_type = InstanceOf(PredicateController)
     values_type = InstanceOf(PredicateController)
 
@@ -108,7 +135,10 @@ class MappingOf(WatchMe, PredicateController):
         self.values_type = values_type()
 
 
-class BaseCombinator(WatchMe, PredicateController):
+class BaseCombinator(BaseControlledValidator):
+    """Base class for any validator that binds a bunch of other validators
+    together. See SomeOf and CombineFrom code below.
+    """
     inner_types = ArrayOf(InstanceOf(PredicateController))
 
     def __init__(self, *inner_types):
@@ -116,12 +146,17 @@ class BaseCombinator(WatchMe, PredicateController):
 
 
 class SomeOf(BaseCombinator):
+    """This is just a fancy way to say OR speaking of validators.
+    """
 
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
 
 class CombineFrom(BaseCombinator):
+    """Represents AND operator for validators.
+    """
 
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
+
