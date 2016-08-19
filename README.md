@@ -1,5 +1,5 @@
 # Watch 👁
-[![Build Status]()](https://travis-ci.org/magniff/watch)
+[![Build Status](https://api.travis-ci.org/magniff/watch.svg?branch=master)](https://travis-ci.org/magniff/watch)
 
 This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators. Usage is fairly straight forward, check out:
 
