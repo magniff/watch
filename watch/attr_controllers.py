@@ -2,9 +2,16 @@ from copy import deepcopy
 
 
 class AttributeDescriptor:
-    """This class express some common logic for any attribute descriptor,
+    """This class expresses some common logic for any attribute descriptor,
     not biggy.
     """
+    def __getattr__(self, attr_name):
+        if attr_name == 'field_name':
+            raise TypeError(
+                'In order to use %s as a descriptor-validator, you should '
+                'inherit your class from watch.WatchMe.' % repr(self)
+            )
+        return super().__getattribute__(attr_name)
 
     def __get__(self, obj, klass=None):
         # when attr being looked up in class instead of instance
@@ -73,7 +80,7 @@ class WatchMe(metaclass=AttributeControllerMeta):
 
     def generate_error_message(self, field_name, value):
         return (
-            "Cant set attribute '%s' of object %s to be %s." %
+            "Failed to set attribute '%s' of object %s to be %s." %
             (field_name, self, repr(value))
         )
 
