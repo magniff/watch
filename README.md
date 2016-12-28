@@ -63,6 +63,28 @@ Note that all of them and each validator, presenting in `watch.builtins` are sel
 ### Secondary validators
 Find more stuff in `watch.builtins`.
 
+### Limitations
+Note, that the actual validation is based on `__set__` method of attribute descriptor object (see descriptor protocol documentation on python.org web site). Having that said it should be rather clear, that validation of mutable data is (in general) impossible. Condsider following example:
+```python3
+class CouldNotBreak(watch.WatchMe):
+   # only lists or tuples of ints are allowed, right?
+   attribute = watch.ArrayOf(watch.builtins.InstanceOf(int))
+
+instance = CouldNotBreak()
+
+# that works, as expected
+instance.attribute = [1,2,3]
+
+# but then you do, and `Watch` is kind of OK with that
+instance.attribute.append('hello world')
+```
+Sure you coud revalidate attribute by simply reseting it, like:
+```python3
+instance.attribute = instance.attribute
+```
+But this looks weird indeed.
+
+
 ### How to create custom validator
 Even though you can build rather reach validators using only stuff described above, you are welcome to create your own one. The base class of each validator is `watch.PredicateController`, that has method `predicate(value)`, that should return `True` if value fits to object and `False` otherwise. The following example demonstrates how to build validator, that checks whether this value been set earlier:
 ```python
@@ -73,7 +95,7 @@ class Unique(watch.PredicateController):
     def predicate(self, value):
         if value in self.already_seen:
             return False
-    
+
         self.already_seen.add(value)
         return True
 ```
@@ -95,8 +117,9 @@ You can customize validation failure handler by overriding `complain` method in 
 class MyClass(WatchMe):
     # only palindromic strings are allowed
     foo = CombineFrom(String, Pred(lambda string: string == string[::-1]))
-    
+
     def complain(self, attr_name, value):
         print(attr_name, value)
 ```
 this will print attribute name and corresponding value on screen instead of raising error.
+
