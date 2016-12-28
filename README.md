@@ -1,18 +1,42 @@
 # Watch 👁
 [![Build Status](https://api.travis-ci.org/magniff/watch.svg?branch=master)](https://travis-ci.org/magniff/watch)
 
-This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators. Usage is fairly straight forward, check out:
+This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators.
 
-``` python
-from watch import WatchMe, Pred
-class MyClass(WatchMe):
-    foo = Pred(lambda item: isinstance(item, int))
+### Motivation
+The main goal of that library is to get rid of code like this one:
+```python
+class MyClass:
+    def __init__(self, foo, bar):
+       assert isinstance(foo, (tuple, list)) and all(isinstance(item, int) for item in foo)
+       assert isinstance(bar, str)
+       self.this_should_list_of_ints = foo
+       self.and_this_should_be_string = bar
+```
+Usually you heavily rely on types or values of your attributes.
+Note, that you should perform these assertions each time you set attributes foo and bar in order to keep your state consistent.
+From my point of view it would be way claner to have the validation expressed like this (pseudocode):
+```python
+class MyClass:
+     foo = List(Int)
+     bar = String
+
+     def __init__(self, foo, bar):
+        self.foo = foo
+        self.bar = bar
+```
+If you agree with me, have a look on `Watch` library. Here I have a little example for you:
+
+```python
+import watch
+class MyClass(watch.WatchMe):
+    foo = watch.ArrayOf(watch.builtins.InstanceOf(int)) 
 
 instance = MyClass()
-instance.foo = 10  # allowed
-instance.foo = "sup"  # will rise AttributeError, only ints are allowed
+instance.foo = [10, 20]  # allowed
+instance.foo = "sup"  # will rise AttributeError
 ```
-henceforth attribute `foo` of `MyClass` objects owned by `Pred` descriptor, that basically does `isinstance(value, int)` every time you are setting `value` into `foo`. If `value` doesnt meet requirements of controller, then `complain(self, field_name, value)` method of `MyClass` takes control, by default there is an implementation in `WatchMe` base class, that simply raises `AttribureError`.
+henceforth attribute `foo` of `MyClass` objects owned by `ArrayOf` descriptor. If value doesnt meet requirements of controller, then `complain(self, field_name, value)` method of `MyClass` takes control, by default there is an implementation located in `WatchMe` base class, that simply raises `AttribureError`.
 
 ### Installation
 You can clone this repo and perform installation by running `setup.py` script. This code also available in `pypi` by name `watch`, so to get it from there just run `pip install watch`.
