@@ -75,7 +75,7 @@ instance = CouldNotBreak()
 # that works, as expected
 instance.attribute = [1,2,3]
 
-# but then you do, and `Watch` is kind of OK with that
+# `Watch` is kind of OK with following
 instance.attribute.append('hello world')
 ```
 Sure you coud revalidate attribute by simply reseting it, like:
