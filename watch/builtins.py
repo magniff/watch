@@ -2,14 +2,7 @@ from collections import abc
 from .attr_controllers import PredicateController, WatchMe
 
 
-class Callable(PredicateController):
-
-    def predicate(self, value):
-        return isinstance(value, abc.Callable)
-
-
 class BaseControlledValidator(WatchMe, PredicateController):
-
     def generate_error_message(self, field_name, value):
         return (
             "You tried to init <%s> by something other then another "
@@ -20,7 +13,13 @@ class BaseControlledValidator(WatchMe, PredicateController):
 class Pred(WatchMe, PredicateController):
     """Validation based on given 'predicate' function.
     """
-    predicate = Callable
+
+    # this wont let Pred object be inited with non callable checker
+    predicate = type(
+        'AnonymousCallableChecker',
+        (PredicateController,),
+        {'predicate': lambda self, value: isinstance(value, abc.Callable)}
+    )
 
     def __init__(self, predicate):
         self.predicate = predicate
@@ -148,7 +147,6 @@ class BaseCombinator(BaseControlledValidator):
 class SomeOf(BaseCombinator):
     """This is just a fancy way to say OR speaking of validators.
     """
-
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
@@ -156,7 +154,6 @@ class SomeOf(BaseCombinator):
 class CombineFrom(BaseCombinator):
     """Represents AND operator for validators.
     """
-
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
 
