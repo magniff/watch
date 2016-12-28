@@ -65,7 +65,7 @@ Find more stuff in `watch.builtins`.
 
 ### Limitations
 Note, that the actual validation is based on `__set__` method of attribute descriptor object (see descriptor protocol documentation on python.org web site). Having that said it should be rather clear, that validation of mutable data is (in general) impossible. Condsider following example:
-```python3
+```python
 class CouldNotBreak(watch.WatchMe):
    # only lists or tuples of ints are allowed, right?
    attribute = watch.ArrayOf(watch.builtins.InstanceOf(int))
@@ -79,7 +79,7 @@ instance.attribute = [1,2,3]
 instance.attribute.append('hello world')
 ```
 Sure you coud revalidate attribute by simply reseting it, like:
-```python3
+```python
 instance.attribute = instance.attribute
 ```
 But this looks weird indeed.
