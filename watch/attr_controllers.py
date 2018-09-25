@@ -19,11 +19,12 @@ class AttributeDescriptor:
         if obj is None:
             return self
 
-        if self.field_name not in obj.__dict__:
+        try:
+            return obj.__dict__[self.field_name]
+        except KeyError:
             raise AttributeError(
                 "Object %s has no attribute '%s'." % (obj, self.field_name)
             )
-        return obj.__dict__[self.field_name]
 
     def __set__(self, obj, value):
         obj.__dict__[self.field_name] = value
