@@ -15,7 +15,8 @@ class AttributeDescriptor:
 
     def __get__(self, obj, klass=None):
         # when attr being looked up in class instead of instance
-        if klass is not None and obj is None:
+        # klass is always not None
+        if obj is None:
             return self
 
         if self.field_name not in obj.__dict__:
