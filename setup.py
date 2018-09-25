@@ -5,14 +5,14 @@ classifiers = [
     (
         'Programming Language :: Python :: %s' % x
     )
-    for x in '3.1 3.2 3.3 3.4 3.5'.split()
+    for x in '3.1 3.2 3.3 3.4 3.5 3.6 3.7'.split()
 ]
 
 
 setuptools.setup(
     name='watch',
     description='Attribute controlling microframework.',
-    version='0.1.14',
+    version='0.1.15',
     license='MIT license',
     platforms=['unix', 'linux', 'osx', 'win32'],
     author='magniff',
