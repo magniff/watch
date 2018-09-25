@@ -25,8 +25,7 @@ class MyClass:
         self.foo = foo
         self.bar = bar
 ```
-If you agree with me, have a look on `Watch` library. Here I have a little example for you:
-
+If that makes sense to you, have a look on `Watch` library. Here is a little example:
 ```python
 import watch
 class MyClass(watch.WatchMe):
