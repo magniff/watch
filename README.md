@@ -109,7 +109,7 @@ instance.attribute = instance.attribute
 But this looks weird indeed.
 
 
-### How to create custom validator
+### How to create a custom validator
 Even though you can build rather reach validators using only stuff described above, you are welcome to create your own one. The base class of each validator is `watch.PredicateController`, that has method `predicate(value)`, that should return `True` if value fits to object and `False` otherwise. The following example demonstrates how to build validator, that checks whether this value been set earlier:
 ```python
 class Unique(watch.PredicateController):
