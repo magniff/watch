@@ -22,6 +22,17 @@ def bench_set():
     my_obj.foo = foo
 
 
+my_obj_missing = MyClass()
+
+
+def bench_get_missing():
+    try:
+        my_obj_missing.foo
+    except AttributeError:
+        pass
+
+
 runner = perf.Runner()
 runner.bench_func("__get__", bench_get)
 runner.bench_func("__set__", bench_set)
+runner.bench_func("__get__missing", bench_get_missing)
