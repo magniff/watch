@@ -36,3 +36,4 @@ runner = perf.Runner()
 runner.bench_func("__get__", bench_get)
 runner.bench_func("__set__", bench_set)
 runner.bench_func("__get__missing", bench_get_missing)
+

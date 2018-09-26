@@ -3,6 +3,7 @@ from .attr_controllers import PredicateController, WatchMe
 
 
 class BaseControlledValidator(WatchMe, PredicateController):
+
     def generate_error_message(self, field_name, value):
         return (
             "You tried to init <%s> by something other then another "
@@ -10,7 +11,7 @@ class BaseControlledValidator(WatchMe, PredicateController):
         )
 
 
-class Pred(WatchMe, PredicateController):
+class Predicate(WatchMe, PredicateController):
     """Validation based on given 'predicate' function.
     """
 
@@ -31,8 +32,12 @@ class Pred(WatchMe, PredicateController):
         )
 
 
+Whatever = Predicate(lambda item: True)
+Nothing = Predicate(lambda item: False)
+
+
 class InstanceOf(BaseControlledValidator):
-    type_to_check = Pred(lambda item: isinstance(item, type))
+    type_to_check = Predicate(lambda item: isinstance(item, type))
 
     def predicate(self, value):
         return isinstance(value, self.type_to_check)
@@ -51,10 +56,6 @@ class Not(BaseControlledValidator):
 
     def __init__(self, inner_checker):
         self.inner_checker = inner_checker
-
-
-Whatever = Pred(lambda item: True)
-Nothing = Not(Whatever)
 
 
 class SubclassOf(BaseControlledValidator):
@@ -96,23 +97,26 @@ class EqualsTo(BaseControlledValidator):
         self.test_against = test_against
 
 
-class ArrayOf(BaseControlledValidator):
-    """List or tuple of stuff, every item of which passed to additional
-    inner_type validator, for example ArrayOf(Pred(lambda value: value == 5))
+class Container(BaseControlledValidator):
+    """Container for stuff, every item of which passed to additional
+    inner_type validator.
+    Example: Container(Predicate(lambda value: value == 5))
     """
     inner_type = InstanceOf(PredicateController)
+    container_type = SubclassOf(abc.Iterable)
 
     def predicate(self, value):
         return (
-            isinstance(value, (list, tuple)) and
+            isinstance(value, self.container_type) and
             all(self.inner_type.predicate(item) for item in value)
         )
 
-    def __init__(self, inner_type=Whatever):
+    def __init__(self, inner_type=Whatever, container_type=list):
         self.inner_type = inner_type()
+        self.container_type = container_type
 
 
-class MappingOf(BaseControlledValidator):
+class Mapping(BaseControlledValidator):
     """Pretty much what you expect - maps keys to values, which are
     controlled by keys_type and values_type validator respectively.
     """
@@ -138,20 +142,22 @@ class BaseCombinator(BaseControlledValidator):
     """Base class for any validator that binds a bunch of other validators
     together. See SomeOf and CombineFrom code below.
     """
-    inner_types = ArrayOf(InstanceOf(PredicateController))
+    inner_types = Container(
+        InstanceOf(PredicateController), container_type=tuple
+    )
 
     def __init__(self, *inner_types):
         self.inner_types = tuple(controller() for controller in inner_types)
 
 
-class SomeOf(BaseCombinator):
+class Any(BaseCombinator):
     """This is just a fancy way to say OR speaking of validators.
     """
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
 
-class CombineFrom(BaseCombinator):
+class All(BaseCombinator):
     """Represents AND operator for validators.
     """
     def predicate(self, value):

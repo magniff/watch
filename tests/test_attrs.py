@@ -1,12 +1,12 @@
 import pytest
 
 
-from watch import (WatchMe, ArrayOf, SomeOf, CombineFrom, Pred, MappingOf)
+from watch import (WatchMe, Container, Any, All, Predicate, Mapping)
 
 
 def test_attr_simple():
     class MyClass(WatchMe):
-        foo = Pred(lambda item: isinstance(item, int))
+        foo = Predicate(lambda item: isinstance(item, int))
 
     instance = MyClass()
     instance.foo = 10
@@ -18,7 +18,7 @@ def test_attr_simple():
 
 def test_array_of():
     class MyClass(WatchMe):
-        foo = ArrayOf(Pred(lambda item: isinstance(item, int)))
+        foo = Container(Predicate(lambda item: isinstance(item, int)))
 
     instance = MyClass()
     instance.foo = [1, 2, 3]
@@ -33,7 +33,7 @@ def test_array_of():
 
 def test_array_of_array_of():
     class MyClass(WatchMe):
-        foo = ArrayOf(ArrayOf(Pred(lambda item: isinstance(item, int))))
+        foo = Container(Container(Predicate(lambda item: isinstance(item, int))))
 
     instance = MyClass()
     instance.foo = [[1, 2, 3], [4, 5, 6]]
@@ -44,12 +44,13 @@ def test_array_of_array_of():
 
 
 def test_array_of_some_of():
+
     class MyClass(WatchMe):
-        foo = ArrayOf(
-            SomeOf(
-                Pred(lambda item: isinstance(item, int)),
-                Pred(lambda item: isinstance(item, str)),
-                ArrayOf(Pred(lambda item: isinstance(item, int)))
+        foo = Container(
+            Any(
+                Predicate(lambda item: isinstance(item, int)),
+                Predicate(lambda item: isinstance(item, str)),
+                Container(Predicate(lambda item: isinstance(item, int)))
             )
         )
 
@@ -66,7 +67,7 @@ def test_array_of_some_of():
 
 def test_someof0():
     class MyClass(WatchMe):
-        foo = SomeOf(Pred(lambda item: isinstance(item, int)))
+        foo = Any(Predicate(lambda item: isinstance(item, int)))
 
     instance = MyClass()
     instance.foo = 10
@@ -78,9 +79,9 @@ def test_someof0():
 
 def test_someof1():
     class MyClass(WatchMe):
-        foo = SomeOf(
-            Pred(lambda item: isinstance(item, int)),
-            Pred(lambda item: isinstance(item, str))
+        foo = Any(
+            Predicate(lambda item: isinstance(item, int)),
+            Predicate(lambda item: isinstance(item, str))
         )
 
     instance = MyClass()
@@ -97,12 +98,12 @@ def test_someof1():
 
 def test_someof2():
     class MyClass(WatchMe):
-        foo = SomeOf(
-            SomeOf(
-                SomeOf(
-                    SomeOf(
-                        Pred(lambda item: isinstance(item, int)),
-                        Pred(lambda item: isinstance(item, str))
+        foo = Any(
+            Any(
+                Any(
+                    Any(
+                        Predicate(lambda item: isinstance(item, int)),
+                        Predicate(lambda item: isinstance(item, str))
                     )
                 )
             )
@@ -121,12 +122,12 @@ def test_someof2():
 
 
 def test_someof3():
-    Integer = Pred(lambda item: isinstance(item, int))
+    Integer = Predicate(lambda item: isinstance(item, int))
 
     class MyClass(WatchMe):
-        foo = SomeOf(
-            ArrayOf(CombineFrom(Integer, Pred(lambda value: value < 5))),
-            ArrayOf(CombineFrom(Integer, Pred(lambda value: value > 10))),
+        foo = Any(
+            Container(All(Integer, Predicate(lambda value: value < 5))),
+            Container(All(Integer, Predicate(lambda value: value > 10))),
         )
 
     instance = MyClass()
@@ -144,9 +145,9 @@ def test_someof3():
         instance.foo = [100, 200, -1]
 
 
-def test_pred():
+def test_Predicate():
     class MyClass(WatchMe):
-        foo = Pred(lambda value: value > 10)
+        foo = Predicate(lambda value: value > 10)
 
     instance = MyClass()
     instance.foo = 20
@@ -158,10 +159,10 @@ def test_pred():
 
 def test_combine_from0():
     class MyClass(WatchMe):
-        foo = CombineFrom(
-            Pred(lambda item: isinstance(item, int)),
-            Pred(lambda value: value > 10),
-            Pred(lambda value: value < 20)
+        foo = All(
+            Predicate(lambda item: isinstance(item, int)),
+            Predicate(lambda value: value > 10),
+            Predicate(lambda value: value < 20)
         )
 
     instance = MyClass()
@@ -177,11 +178,11 @@ def test_combine_from0():
 
 def test_combine_from1():
     class MyClass(WatchMe):
-        foo = CombineFrom(
-            Pred(lambda item: isinstance(item, str)),
-            Pred(lambda value: len(value) > 3),
-            Pred(lambda value: len(value) < 6),
-            Pred(lambda value: value == value[::-1])
+        foo = All(
+            Predicate(lambda item: isinstance(item, str)),
+            Predicate(lambda value: len(value) > 3),
+            Predicate(lambda value: len(value) < 6),
+            Predicate(lambda value: value == value[::-1])
         )
 
     instance = MyClass()
@@ -197,9 +198,9 @@ def test_combine_from1():
 
 def test_MappingOf():
     class MyClass(WatchMe):
-        foo = MappingOf(
-            keys_type=Pred(lambda item: isinstance(item, str)),
-            values_type=Pred(lambda item: isinstance(item, int))
+        foo = Mapping(
+            keys_type=Predicate(lambda item: isinstance(item, str)),
+            values_type=Predicate(lambda item: isinstance(item, int))
         )
 
     instance = MyClass()
@@ -216,16 +217,16 @@ def test_MappingOf():
 def test_MappingOf_array_cant_init_with_noncontroller():
 
     with pytest.raises(AttributeError):
-        MappingOf(keys_type=int)
-        MappingOf(keys_type=10)
-        ArrayOf(keys_type=int)
+        Mapping(keys_type=int)
+        Mapping(keys_type=10)
+        Container(keys_type=int)
 
 
 def test_bind_checkers_deffered():
     class A(WatchMe):
         pass
 
-    A.foo = Pred(lambda item: isinstance(item, int))
+    A.foo = Predicate(lambda item: isinstance(item, int))
     a = A()
     a.foo = 10
     assert a.foo == 10
@@ -236,13 +237,13 @@ def test_bind_checkers_deffered():
 
 def test_attr_accesibble_from_class():
     class A(WatchMe):
-        foo = Pred(lambda value: isinstance(value, int))
+        foo = Predicate(lambda value: isinstance(value, int))
 
     assert hasattr(A, "foo")
 
 
 def test_desctiptor_field_names():
-    Some = Pred(lambda value: isinstance(value, int))
+    Some = Predicate(lambda value: isinstance(value, int))
 
     class A(WatchMe):
         foo = Some

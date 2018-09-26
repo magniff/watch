@@ -2,7 +2,7 @@ from copy import deepcopy
 
 
 class AttributeDescriptor:
-    """This class expresses some common logic for any attribute descriptor,
+    """This class expresses some common logic for every attribute descriptor,
     not biggy.
     """
     def __getattr__(self, attr_name):
@@ -14,8 +14,8 @@ class AttributeDescriptor:
         return super().__getattribute__(attr_name)
 
     def __get__(self, obj, klass=None):
-        # when attr being looked up in class instead of instance
-        # klass is always not None
+        # when attr being looked up in the class instead of instance
+        # "klass" is always not None
         if obj is None:
             return self
 
@@ -31,7 +31,7 @@ class AttributeDescriptor:
 
 
 class PredicateController(AttributeDescriptor):
-    """Base class for every validator.
+    """Base class for any validator type in 'watch'.
     """
     predicate = None
 
@@ -62,12 +62,8 @@ class AttributeControllerMeta(type):
                 issubclass(value, AttributeDescriptor)
             )
 
-            if value_is_descriptor_class:
-                value = value()
-                attrs[name] = value
-
-            if isinstance(value, AttributeDescriptor):
-                value = deepcopy(value)
+            if isinstance(value, AttributeDescriptor) or value_is_descriptor_class:
+                value = deepcopy(value())
                 value.field_name = name
                 attrs[name] = value
 
@@ -81,13 +77,16 @@ class WatchMe(metaclass=AttributeControllerMeta):
     def generate_error_message(self, field_name, value):
         return (
             "Failed to set attribute '%s' of object %s to be %s." %
-            (field_name, self, repr(value))
+            (
+                field_name, object.__repr__(self), object.__repr__(value)
+            )
         )
 
     def complain(self, field_name, value):
-        """This method called if some field set failed validation.
+        """This method is invoked on setattr validation failure.
         It is up to the class to decide how to handle validation error.
         """
         raise AttributeError(
             self.generate_error_message(field_name, value)
         )
+

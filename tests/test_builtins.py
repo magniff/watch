@@ -53,3 +53,4 @@ def test_whatever():
     assert Whatever.predicate(Whatever)
     assert not Nothing.predicate(10)
     assert not Nothing.predicate(Whatever)
+
