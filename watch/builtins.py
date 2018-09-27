@@ -148,20 +148,20 @@ class Container(BaseControlledValidator):
     cases (e.g. generators) validation may screw up your container.
     """
 
-    items_validator = InstanceOf(PredicateController)
+    items = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Iterable)
 
     def predicate(self, value):
         return (
             isinstance(value, self.container_type) and
-            all(self.items_validator.predicate(item) for item in value)
+            all(self.items.predicate(item) for item in value)
         )
 
     def __init__(self, items=None, container=None):
         """NOTE: strings and all kinds of mappings have the same Iterable
         interface, so choose wisely.
         """
-        self.items_validator = items is not None and items or Whatever
+        self.items = items is not None and items or Whatever
         self.container_type = container or abc.Iterable
 
 
@@ -171,33 +171,30 @@ class Mapping(BaseControlledValidator):
     controlled by 'keys' and 'values' validators respectively.
     """
 
-    keys_type = InstanceOf(PredicateController)
-    values_type = InstanceOf(PredicateController)
+    keys = InstanceOf(PredicateController)
+    values = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Mapping)
 
     def predicate(self, value_to_check):
         return (
             isinstance(value_to_check, self.container_type) and
             all(
-                self.keys_type.predicate(key) and
-                self.values_type.predicate(value)
+                self.keys.predicate(key) and
+                self.values.predicate(value)
                 for key, value in value_to_check.items()
             )
         )
 
     def __init__(self, keys=None, values=None, container=None):
-        # keys should be hashble and comparable
-        self.keys_type = (
-            HasAttr("__eq__") & HasAttr("__hash__") & (keys or Whatever)
-        )
-        self.values_type = values or Whatever
+        self.keys = keys or Whatever
+        self.values = values or Whatever
         self.container_type = container or abc.Mapping
 
 
 class NAryConstructor(BaseControlledValidator):
     """
     Base class for any validator that binds a bunch of other validators
-    together. See SomeOf and CombineFrom code below.
+    together. See the code for And and Or nodes below.
     """
 
     combined_from = Container(

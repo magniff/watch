@@ -6,7 +6,7 @@ from watch import WatchMe
 
 
 class MyClass(WatchMe):
-    foo = Container(Mapping(InstanceOf(str), InstanceOf(int)))
+    foo = Container(InstanceOf(str) >> InstanceOf(int))
 
 
 my_obj = MyClass()
