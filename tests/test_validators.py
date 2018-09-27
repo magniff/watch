@@ -5,10 +5,20 @@ import py.test
 
 
 from watch import WatchMe, Predicate
-from watch.builtins import Not, Any, All, Container, InstanceOf, Choose
+from watch.builtins import (
+    Not, Any, All, Just, Whatever, Container, InstanceOf, Choose
+)
 
 
 CASES = [
+    # simple Just
+    (
+        Just(5),
+        [
+            (5, True),
+            ("hello", False),
+        ]
+    ),
     # simple predicate
     (
         Predicate(lambda value: value > 0),
@@ -125,6 +135,24 @@ MAGIC_CASES = [
             (1, True),
             (-1, True),
             (0, False),
+        ]
+    ),
+    # OR(Just)
+    (
+        Just(5) | Just(6),
+        [
+            (0, False),
+            (6, True),
+            (5, True),
+        ]
+    ),
+    # OR(Just | Whatever): should fallback to Whatever
+    (
+        Just(5) | Just(6) | Whatever,
+        [
+            (6, True),
+            (5, True),
+            ("hello", True),
         ]
     ),
 ]

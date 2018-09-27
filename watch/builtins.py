@@ -93,14 +93,14 @@ class HasAttr(BaseControlledValidator):
         self.attribute_name = attribute_name
 
 
-class EqualsTo(BaseControlledValidator):
+class Just(BaseControlledValidator):
     test_against = HasAttr('__eq__')
 
     def predicate(self, value):
         return self.test_against == value
 
-    def __init__(self, test_against):
-        self.test_against = test_against
+    def __init__(self, value):
+        self.test_against = value
 
 
 class Container(BaseControlledValidator):
@@ -111,6 +111,7 @@ class Container(BaseControlledValidator):
     WARNING: validation actually iterates over the container, thus in some
     cases (e.g. generators) validation may screw up your container.
     """
+
     inner_validator = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Iterable)
 
