@@ -5,7 +5,7 @@ import py.test
 
 
 from watch import WatchMe, Predicate
-from watch.builtins import Not, Any, All, Container, InstanceOf
+from watch.builtins import Not, Any, All, Container, InstanceOf, Choose
 
 
 CASES = [
@@ -49,6 +49,18 @@ CASES = [
             ("hello", True),
         ]
     ),
+    # basic XOR validator
+    (
+        Choose(
+            Predicate(lambda value: value > 10),
+            Predicate(lambda value: value < 20),
+        ),
+        [
+            (5, True),
+            (25, True),
+            (15, False),
+        ]
+    ),
     # simple AND: palindromic strings with len > 0
     (
         All(
@@ -68,8 +80,8 @@ CASES = [
     # simple Container
     (
         Container(
-            inner_validator=Predicate(lambda value: value > 0),
-            container_type=Iterable
+            items=Predicate(lambda value: value > 0),
+            container=Iterable
         ),
         [
             (
@@ -92,11 +104,8 @@ CASES = [
     # nested container: list of tuples of ints
     (
         Container(
-            inner_validator=Container(
-                inner_validator=InstanceOf(int),
-                container_type=tuple
-            ),
-            container_type=list,
+            items=Container(items=InstanceOf(int), container=tuple),
+            container=list,
         ),
         [
             ([(1,2,3)], True),
@@ -108,6 +117,17 @@ CASES = [
     ),
 ]
 
+MAGIC_CASES = [
+    # OR
+    (
+        Predicate(lambda value: value > 0) | Predicate(lambda value: value < 0),
+        [
+            (1, True),
+            (-1, True),
+            (0, False),
+        ]
+    ),
+]
 
 def cases(case_spec):
 
@@ -123,5 +143,12 @@ def cases(case_spec):
     "validator,value_to_test,expected_result", cases(CASES)
 )
 def test_validators(validator, value_to_test, expected_result):
+    assert validator.predicate(value_to_test) == expected_result
+
+
+@py.test.mark.parametrize(
+    "validator,value_to_test,expected_result", cases(MAGIC_CASES)
+)
+def test_magics(validator, value_to_test, expected_result):
     assert validator.predicate(value_to_test) == expected_result
 

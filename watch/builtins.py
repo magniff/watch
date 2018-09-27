@@ -1,4 +1,8 @@
 from collections import abc
+from operator import xor
+from functools import reduce
+
+
 from .attr_controllers import PredicateController, WatchMe
 
 
@@ -80,13 +84,13 @@ class HasAttr(BaseControlledValidator):
     """
     Checks that value has given attribute.
     """
-    attr_name = InstanceOf(str)
+    attribute_name = InstanceOf(str)
 
     def predicate(self, value):
-        return hasattr(value, self.attr_name)
+        return hasattr(value, self.attribute_name)
 
-    def __init__(self, attr_name):
-        self.attr_name = attr_name
+    def __init__(self, attribute_name):
+        self.attribute_name = attribute_name
 
 
 class EqualsTo(BaseControlledValidator):
@@ -116,12 +120,12 @@ class Container(BaseControlledValidator):
             all(self.inner_validator.predicate(item) for item in value)
         )
 
-    def __init__(self, inner_validator=Whatever, container_type=abc.Iterable):
+    def __init__(self, items=None, container=None):
         """NOTE: strings and all kinds of mappings have the same Iterable
         interface, so choose wisely.
         """
-        self.inner_validator = inner_validator()
-        self.container_type = container_type
+        self.inner_validator = items and items() or Whatever()
+        self.container_type = container or abc.Iterable
 
 
 class Mapping(BaseControlledValidator):
@@ -131,10 +135,11 @@ class Mapping(BaseControlledValidator):
     """
     keys_type = InstanceOf(PredicateController)
     values_type = InstanceOf(PredicateController)
+    container_type = SubclassOf(abc.Mapping)
 
     def predicate(self, value_to_check):
         return (
-            isinstance(value_to_check, abc.Mapping) and
+            isinstance(value_to_check, self.container_type) and
             all(
                 self.keys_type.predicate(key) and
                 self.values_type.predicate(value)
@@ -142,9 +147,10 @@ class Mapping(BaseControlledValidator):
             )
         )
 
-    def __init__(self, keys_type=Whatever, values_type=Whatever):
-        self.keys_type = keys_type()
-        self.values_type = values_type()
+    def __init__(self, keys=None, values=None, container=None):
+        self.keys_type = keys and keys() or Whatever()
+        self.values_type = values and values() or Whatever()
+        self.container_type = container or abc.Mapping
 
 
 class BaseCombinator(BaseControlledValidator):
@@ -153,7 +159,7 @@ class BaseCombinator(BaseControlledValidator):
     together. See SomeOf and CombineFrom code below.
     """
     inner_types = Container(
-        InstanceOf(PredicateController), container_type=tuple
+        InstanceOf(PredicateController), container=tuple
     )
 
     def __init__(self, *inner_types):
@@ -174,4 +180,16 @@ class All(BaseCombinator):
     """
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
+
+
+class Choose(BaseCombinator):
+    """
+    Represents XOR operator for validators.
+    """
+    def predicate(self, value):
+        return reduce(
+            xor,
+            (checker.predicate(value) for checker in self.inner_types),
+            False
+        )
 

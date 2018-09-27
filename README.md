@@ -1,4 +1,4 @@
-# Watch 👁
+# Watch ๏_๏
 [![Build Status](https://api.travis-ci.org/magniff/watch.svg?branch=master)](https://travis-ci.org/magniff/watch)
 
 This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators.
@@ -106,33 +106,6 @@ Sure you coud revalidate attribute by simply reseting it, like:
 instance.attribute = instance.attribute
 ```
 But this looks weird indeed.
-
-
-### How to create a custom validator
-Even though you can build rather reach validators using only stuff described above, you are welcome to create your own one. The base class of each validator is `watch.PredicateController`, that has method `predicate(value)`, that should return `True` if value fits to object and `False` otherwise. The following example demonstrates how to build validator, that checks whether this value been set earlier:
-```python
-class Unique(watch.PredicateController):
-    def __init__(self):
-        self.already_seen = set()
-
-    def predicate(self, value):
-        if value in self.already_seen:
-            return False
-
-        self.already_seen.add(value)
-        return True
-```
-thus
-```python
-class MyAwesomeClass(watch.WatchMe):
-    foo = Unique # yes, you dont really need to instantiate your validators
-
-awesomness = MyAwesomeClass()
->>> awesomness.foo = 1
->>> # lets do it again, validator should catch this
->>> awesomness.foo = 1
-AttributeError: Cant set attribute 'foo' of object...
-```
 
 ### How to handle an attribute error
 You can customize validation failure handler by overriding `complain` method in your class, say:

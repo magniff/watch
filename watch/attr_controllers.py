@@ -1,45 +1,59 @@
 import copy
 
 
+import watch
+
+
 class AttributeDescriptor:
     """This class expresses some common logic for every attribute descriptor,
     not biggy.
     """
-    def __getattr__(self, attr_name):
-        if attr_name == 'field_name':
+
+    def __getattr__(self, attribute):
+        if attribute == 'field_name':
             raise TypeError(
                 'In order to use %s as a descriptor-validator, you should '
                 'inherit your class from watch.WatchMe.' % repr(self)
             )
-        return super().__getattribute__(attr_name)
+        return super().__getattribute__(attribute)
 
-    def __get__(self, obj, klass=None):
+    def __get__(self, passed_instance, passed_type=None):
         # when attr being looked up in the class instead of instance
-        # "klass" is always not None
-        if obj is None:
+        # "passed_type" is always not None
+        if passed_instance is None:
             return self
-
         try:
-            return obj.__dict__[self.field_name]
+            return passed_instance.__dict__[self.field_name]
         except KeyError:
             raise AttributeError(
-                "Object %s has no attribute '%s'." % (obj, self.field_name)
+                "Object %s has no attribute '%s'." %
+                (passed_instance, self.field_name)
             )
 
-    def __set__(self, obj, value):
-        obj.__dict__[self.field_name] = value
+    def __set__(self, passed_instance, value):
+        passed_instance.__dict__[self.field_name] = value
+        return None
 
 
-class PredicateController(AttributeDescriptor):
+class PredicateController(AttributeDescriptor, ):
     """Base class for any validator type in 'watch'.
     """
     predicate = None
 
-    def __set__(self, obj, value):
+    def __or__(self, other):
+        return watch.builtins.Any(self, other)
+
+    def __and__(self, other):
+        return watch.builtins.All(self, other)
+
+    def __xor__(self, other):
+        return watch.builtins.Choose(self, other)
+
+    def __set__(self, passed_instance, value):
         if self.predicate(value):
-            super().__set__(obj, value)
+            super().__set__(passed_instance, value)
         else:
-            obj.complain(self.field_name, value)
+            passed_instance.complain(self.field_name, value)
 
     def __call__(self):
         return self
