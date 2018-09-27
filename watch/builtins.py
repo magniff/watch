@@ -148,20 +148,20 @@ class Container(BaseControlledValidator):
     cases (e.g. generators) validation may screw up your container.
     """
 
-    inner_validator = InstanceOf(PredicateController)
+    items_validator = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Iterable)
 
     def predicate(self, value):
         return (
             isinstance(value, self.container_type) and
-            all(self.inner_validator.predicate(item) for item in value)
+            all(self.items_validator.predicate(item) for item in value)
         )
 
     def __init__(self, items=None, container=None):
         """NOTE: strings and all kinds of mappings have the same Iterable
         interface, so choose wisely.
         """
-        self.inner_validator = items and items() or Whatever()
+        self.items_validator = items is not None and items or Whatever
         self.container_type = container or abc.Iterable
 
 
