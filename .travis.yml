@@ -1,9 +1,19 @@
 language: python
+
 python:
-        - "3.3"
-        - "3.4"
-        - "3.5"
+        - 3.3
+        - 3.4
+        - 3.5
+        - 3.6
+        - pypy3
+
 install:
+        - pip install codecov
+        - pip install pytest-cov
         - python setup.py develop
-script: py.test
-after_success: coveralls
+
+script: py.test --cov=. tests/
+
+after_success:
+        - codecov
+

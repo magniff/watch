@@ -1,8 +1,13 @@
 from collections import abc
+from operator import xor
+from functools import reduce
+
+
 from .attr_controllers import PredicateController, WatchMe
 
 
 class BaseControlledValidator(WatchMe, PredicateController):
+
     def generate_error_message(self, field_name, value):
         return (
             "You tried to init <%s> by something other then another "
@@ -10,15 +15,17 @@ class BaseControlledValidator(WatchMe, PredicateController):
         )
 
 
-class Pred(WatchMe, PredicateController):
+class Predicate(WatchMe, PredicateController):
     """Validation based on given 'predicate' function.
     """
 
     # this wont let Pred object be inited with non callable checker
     predicate = type(
-        'AnonymousCallableChecker',
+        "AnonymousCallableChecker",
         (PredicateController,),
-        {'predicate': lambda self, value: isinstance(value, abc.Callable)}
+        {
+            "predicate": lambda self, value: isinstance(value, abc.Callable)
+        }
     )
 
     def __init__(self, predicate):
@@ -31,30 +38,18 @@ class Pred(WatchMe, PredicateController):
         )
 
 
+Whatever = Predicate(lambda item: True)
+Nothing = Predicate(lambda item: False)
+
+
 class InstanceOf(BaseControlledValidator):
-    type_to_check = Pred(lambda item: isinstance(item, type))
+    type_to_check = Predicate(lambda item: isinstance(item, type))
 
     def predicate(self, value):
         return isinstance(value, self.type_to_check)
 
     def __init__(self, type_to_check):
         self.type_to_check = type_to_check
-
-
-class Not(BaseControlledValidator):
-    """Negates the result of nested validator.
-    """
-    inner_checker = InstanceOf(PredicateController)
-
-    def predicate(self, value):
-        return not self.inner_checker.predicate(value)
-
-    def __init__(self, inner_checker):
-        self.inner_checker = inner_checker
-
-
-Whatever = Pred(lambda item: True)
-Nothing = Not(Whatever)
 
 
 class SubclassOf(BaseControlledValidator):
@@ -74,86 +69,178 @@ class SubclassOf(BaseControlledValidator):
         self.type_to_check_against = type_to_check_against
 
 
+class Not(BaseControlledValidator):
+    """
+    Negates the result of nested validator.
+    """
+    inner_checker = InstanceOf(PredicateController)
+
+    def predicate(self, value):
+        return not self.inner_checker.predicate(value)
+
+    def __init__(self, inner_checker):
+        self.inner_checker = inner_checker
+
+
+class AgnosticComparator(BaseControlledValidator):
+    value_to_check_agains = Not(InstanceOf(PredicateController))
+
+    def __init__(self, value_to_check_against):
+        self.value_to_check_against = value_to_check_against
+
+
+class GtThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value > self.value_to_check_against
+
+
+class GtEqThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value >= self.value_to_check_against
+
+
+class LtThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value < self.value_to_check_against
+
+
+class LtEqThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value <= self.value_to_check_against
+
+
+
+class Nullable(BaseControlledValidator):
+    inner_checker = InstanceOf(PredicateController)
+
+    def predicate(self, value):
+        return value is None or self.inner_checker.predicate(value)
+
+    def __init__(self, inner_checker):
+        self.inner_checker = inner_checker
+
+
 class HasAttr(BaseControlledValidator):
-    """Checks that value has given attribute.
     """
-    attr_name = InstanceOf(str)
+    Checks that value has given attribute.
+    """
+
+    attribute_name = InstanceOf(str)
 
     def predicate(self, value):
-        return hasattr(value, self.attr_name)
+        return hasattr(value, self.attribute_name)
 
-    def __init__(self, attr_name):
-        self.attr_name = attr_name
-
-
-class EqualsTo(BaseControlledValidator):
-    test_against = HasAttr('__eq__')
-
-    def predicate(self, value):
-        return self.test_against == value
-
-    def __init__(self, test_against):
-        self.test_against = test_against
+    def __init__(self, attribute_name):
+        self.attribute_name = attribute_name
 
 
-class ArrayOf(BaseControlledValidator):
-    """List or tuple of stuff, every item of which passed to additional
-    inner_type validator, for example ArrayOf(Pred(lambda value: value == 5))
+class Container(BaseControlledValidator):
     """
-    inner_type = InstanceOf(PredicateController)
+    Container of stuff, every item of which is passed to additional
+    inner_type validator.
+    Example: Container(Gt(5) & Lt(10))
+
+    Warning: validation actually iterates over the container, thus in some
+    cases (e.g. generators) validation may screw up your container.
+    """
+
+    items = InstanceOf(PredicateController)
+    container_type = SubclassOf(abc.Iterable)
 
     def predicate(self, value):
         return (
-            isinstance(value, (list, tuple)) and
-            all(self.inner_type.predicate(item) for item in value)
+            isinstance(value, self.container_type) and
+            all(self.items.predicate(item) for item in value)
         )
 
-    def __init__(self, inner_type=Whatever):
-        self.inner_type = inner_type()
+    def __init__(self, items=None, container=None):
+        """NOTE: strings and all kinds of mappings have the same Iterable
+        interface, so choose wisely.
+        """
+        self.items = items is not None and items or Whatever
+        self.container_type = container or abc.Iterable
 
 
-class MappingOf(BaseControlledValidator):
-    """Pretty much what you expect - maps keys to values, which are
-    controlled by keys_type and values_type validator respectively.
+class Mapping(BaseControlledValidator):
     """
-    keys_type = InstanceOf(PredicateController)
-    values_type = InstanceOf(PredicateController)
+    Pretty much what you expect - maps keys to values, which are
+    controlled by 'keys' and 'values' validators respectively.
+    """
+
+    keys = InstanceOf(PredicateController)
+    values = InstanceOf(PredicateController)
+    container_type = SubclassOf(abc.Mapping)
 
     def predicate(self, value_to_check):
         return (
-            isinstance(value_to_check, abc.Mapping) and
+            isinstance(value_to_check, self.container_type) and
             all(
-                self.keys_type.predicate(key) and
-                self.values_type.predicate(value)
+                self.keys.predicate(key) and
+                self.values.predicate(value)
                 for key, value in value_to_check.items()
             )
         )
 
-    def __init__(self, keys_type=Whatever, values_type=Whatever):
-        self.keys_type = keys_type()
-        self.values_type = values_type()
+    def __init__(self, keys=None, values=None, container=None):
+        self.keys = keys or Whatever
+        self.values = values or Whatever
+        self.container_type = container or abc.Mapping
 
 
-class BaseCombinator(BaseControlledValidator):
-    """Base class for any validator that binds a bunch of other validators
-    together. See SomeOf and CombineFrom code below.
+class NAryConstructor(BaseControlledValidator):
     """
-    inner_types = ArrayOf(InstanceOf(PredicateController))
-
-    def __init__(self, *inner_types):
-        self.inner_types = tuple(controller() for controller in inner_types)
-
-
-class SomeOf(BaseCombinator):
-    """This is just a fancy way to say OR speaking of validators.
+    Base class for any validator that binds a bunch of other validators
+    together. See the code for And and Or nodes below.
     """
+
+    combined_from = Container(
+        InstanceOf(PredicateController), container=list
+    )
+
+    def __init__(self, *combine_from):
+        self.combined_from = list(controller() for controller in combine_from)
+
+
+class Or(NAryConstructor):
+
     def predicate(self, value):
-        return any(checker.predicate(value) for checker in self.inner_types)
+        return any(checker.predicate(value) for checker in self.combined_from)
 
 
-class CombineFrom(BaseCombinator):
-    """Represents AND operator for validators.
-    """
+class And(NAryConstructor):
+
     def predicate(self, value):
-        return all(checker.predicate(value) for checker in self.inner_types)
+        return all(checker.predicate(value) for checker in self.combined_from)
+
+
+class Xor(NAryConstructor):
+
+    def predicate(self, value):
+        return reduce(
+            xor,
+            (checker.predicate(value) for checker in self.combined_from),
+            False
+        )
+
+
+class Just(BaseControlledValidator):
+
+    test_against = And(
+        Container(HasAttr("__eq__"), container=list),
+        Predicate(lambda value: len(value) > 0),
+    )
+
+    def predicate(self, value):
+        return value in self.test_against
+
+    def __init__(self, *values):
+        self.test_against = list(values)
+
+
+# Alias name, does it make sense to you?
+Choose = Xor
 
