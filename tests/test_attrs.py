@@ -1,7 +1,8 @@
 import pytest
 
 
-from watch import (WatchMe, Container, Any, All, Predicate, Mapping)
+from watch import WatchMe
+from watch.builtins import Container, Predicate, Mapping, Or, And, InstanceOf
 
 
 def test_attr_simple():
@@ -33,7 +34,9 @@ def test_array_of():
 
 def test_array_of_array_of():
     class MyClass(WatchMe):
-        foo = Container(Container(Predicate(lambda item: isinstance(item, int))))
+        foo = Container(
+            Container(Predicate(lambda item: isinstance(item, int)))
+        )
 
     instance = MyClass()
     instance.foo = [[1, 2, 3], [4, 5, 6]]
@@ -47,11 +50,10 @@ def test_array_of_some_of():
 
     class MyClass(WatchMe):
         foo = Container(
-            Any(
-                Predicate(lambda item: isinstance(item, int)),
-                Predicate(lambda item: isinstance(item, str)),
-                Container(Predicate(lambda item: isinstance(item, int)))
-            )
+            items=(
+                InstanceOf(int) | InstanceOf(str) | Container(InstanceOf(int))
+            ),
+            container=list,
         )
 
     instance = MyClass()
@@ -67,7 +69,7 @@ def test_array_of_some_of():
 
 def test_someof0():
     class MyClass(WatchMe):
-        foo = Any(Predicate(lambda item: isinstance(item, int)))
+        foo = Or(Predicate(lambda item: isinstance(item, int)))
 
     instance = MyClass()
     instance.foo = 10
@@ -79,7 +81,7 @@ def test_someof0():
 
 def test_someof1():
     class MyClass(WatchMe):
-        foo = Any(
+        foo = Or(
             Predicate(lambda item: isinstance(item, int)),
             Predicate(lambda item: isinstance(item, str))
         )
@@ -98,10 +100,10 @@ def test_someof1():
 
 def test_someof2():
     class MyClass(WatchMe):
-        foo = Any(
-            Any(
-                Any(
-                    Any(
+        foo = Or(
+            Or(
+                Or(
+                    Or(
                         Predicate(lambda item: isinstance(item, int)),
                         Predicate(lambda item: isinstance(item, str))
                     )
@@ -125,9 +127,9 @@ def test_someof3():
     Integer = Predicate(lambda item: isinstance(item, int))
 
     class MyClass(WatchMe):
-        foo = Any(
-            Container(All(Integer, Predicate(lambda value: value < 5))),
-            Container(All(Integer, Predicate(lambda value: value > 10))),
+        foo = Or(
+            Container(And(Integer, Predicate(lambda value: value < 5))),
+            Container(And(Integer, Predicate(lambda value: value > 10))),
         )
 
     instance = MyClass()
@@ -158,8 +160,9 @@ def test_Predicate():
 
 
 def test_combine_from0():
+
     class MyClass(WatchMe):
-        foo = All(
+        foo = And(
             Predicate(lambda item: isinstance(item, int)),
             Predicate(lambda value: value > 10),
             Predicate(lambda value: value < 20)
@@ -178,7 +181,7 @@ def test_combine_from0():
 
 def test_combine_from1():
     class MyClass(WatchMe):
-        foo = All(
+        foo = And(
             Predicate(lambda item: isinstance(item, str)),
             Predicate(lambda value: len(value) > 3),
             Predicate(lambda value: len(value) < 6),
@@ -199,8 +202,8 @@ def test_combine_from1():
 def test_MappingOf():
     class MyClass(WatchMe):
         foo = Mapping(
-            keys_type=Predicate(lambda item: isinstance(item, str)),
-            values_type=Predicate(lambda item: isinstance(item, int))
+            keys=Predicate(lambda item: isinstance(item, str)),
+            values=Predicate(lambda item: isinstance(item, int))
         )
 
     instance = MyClass()
@@ -217,9 +220,9 @@ def test_MappingOf():
 def test_MappingOf_array_cant_init_with_noncontroller():
 
     with pytest.raises(AttributeError):
-        Mapping(keys_type=int)
-        Mapping(keys_type=10)
-        Container(keys_type=int)
+        Mapping(keys=int)
+        Mapping(keys=10)
+        Container(keys=int)
 
 
 def test_bind_checkers_deffered():

@@ -35,25 +35,41 @@ class AttributeDescriptor:
         return None
 
 
-class PredicateController(AttributeDescriptor, ):
+class PredicateController(AttributeDescriptor):
     """Base class for any validator type in 'watch'.
+
+    Uses python`s late binding to introduce magics like __and__ way before
+    corresponding predicate nodes being implemented.
     """
     predicate = None
 
+    def __rshift__(self, value):
+        return watch.builtins.Mapping(keys=self, values=value)
+
+    def __gt__(self, value):
+        return self & watch.builtins.GtThen(value)
+
+    def __lt__(self, value):
+        return self & watch.builtins.LtThen(value)
+
+    def __invert__(self):
+        return watch.builtins.Not(self)
+
     def __or__(self, other):
-        return watch.builtins.Or(self, other())
+        return watch.builtins.Or(self, other)
 
     def __and__(self, other):
-        return watch.builtins.And(self, other())
+        return watch.builtins.And(self, other)
 
     def __xor__(self, other):
-        return watch.builtins.Xor(self, other())
+        return watch.builtins.Xor(self, other)
 
     def __set__(self, passed_instance, value):
         if self.predicate(value):
             super().__set__(passed_instance, value)
         else:
             passed_instance.complain(self.field_name, value)
+        return None
 
     def __call__(self):
         return self

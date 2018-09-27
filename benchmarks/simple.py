@@ -1,12 +1,12 @@
 import perf
 
 
-from watch import WatchMe, ArrayOf, MappingOf
-from watch.builtins import InstanceOf
+from watch.builtins import InstanceOf, Container, Mapping
+from watch import WatchMe
 
 
 class MyClass(WatchMe):
-    foo = ArrayOf(MappingOf(InstanceOf(str), InstanceOf(int)))
+    foo = Container(Mapping(InstanceOf(str), InstanceOf(int)))
 
 
 my_obj = MyClass()

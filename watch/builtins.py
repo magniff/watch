@@ -21,9 +21,11 @@ class Predicate(WatchMe, PredicateController):
 
     # this wont let Pred object be inited with non callable checker
     predicate = type(
-        'AnonymousCallableChecker',
+        "AnonymousCallableChecker",
         (PredicateController,),
-        {'predicate': lambda self, value: isinstance(value, abc.Callable)}
+        {
+            "predicate": lambda self, value: isinstance(value, abc.Callable)
+        }
     )
 
     def __init__(self, predicate):
@@ -50,19 +52,6 @@ class InstanceOf(BaseControlledValidator):
         self.type_to_check = type_to_check
 
 
-class Not(BaseControlledValidator):
-    """
-    Negates the result of nested validator.
-    """
-    inner_checker = InstanceOf(PredicateController)
-
-    def predicate(self, value):
-        return not self.inner_checker.predicate(value)
-
-    def __init__(self, inner_checker):
-        self.inner_checker = inner_checker
-
-
 class SubclassOf(BaseControlledValidator):
     type_to_check_against = InstanceOf(type)
     type_to_check = InstanceOf(type)
@@ -80,10 +69,66 @@ class SubclassOf(BaseControlledValidator):
         self.type_to_check_against = type_to_check_against
 
 
+class Not(BaseControlledValidator):
+    """
+    Negates the result of nested validator.
+    """
+    inner_checker = InstanceOf(PredicateController)
+
+    def predicate(self, value):
+        return not self.inner_checker.predicate(value)
+
+    def __init__(self, inner_checker):
+        self.inner_checker = inner_checker
+
+
+class AgnosticComparator(BaseControlledValidator):
+    value_to_check_agains = Not(InstanceOf(PredicateController))
+
+    def __init__(self, value_to_check_against):
+        self.value_to_check_against = value_to_check_against
+
+
+class GtThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value > self.value_to_check_against
+
+
+class GtEqThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value >= self.value_to_check_against
+
+
+class LtThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value < self.value_to_check_against
+
+
+class LtEqThen(AgnosticComparator):
+
+    def predicate(self, value):
+        return value <= self.value_to_check_against
+
+
+
+class Nullable(BaseControlledValidator):
+    inner_checker = InstanceOf(PredicateController)
+
+    def predicate(self, value):
+        return value is None or self.inner_checker.predicate(value)
+
+    def __init__(self, inner_checker):
+        self.inner_checker = inner_checker
+
+
 class HasAttr(BaseControlledValidator):
     """
     Checks that value has given attribute.
     """
+
     attribute_name = InstanceOf(str)
 
     def predicate(self, value):
@@ -94,7 +139,7 @@ class HasAttr(BaseControlledValidator):
 
 
 class Just(BaseControlledValidator):
-    test_against = HasAttr('__eq__')
+    test_against = HasAttr("__eq__")
 
     def predicate(self, value):
         return self.test_against == value
@@ -107,7 +152,7 @@ class Container(BaseControlledValidator):
     """
     Container of stuff, every item of which is passed to additional
     inner_type validator.
-    Example: Container(Predicate(lambda value: value == 5))
+    Example: Container(Gt(5) & Lt(10))
     WARNING: validation actually iterates over the container, thus in some
     cases (e.g. generators) validation may screw up your container.
     """
@@ -134,6 +179,7 @@ class Mapping(BaseControlledValidator):
     Pretty much what you expect - maps keys to values, which are
     controlled by keys_type and values_type validator respectively.
     """
+
     keys_type = InstanceOf(PredicateController)
     values_type = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Mapping)
@@ -149,42 +195,49 @@ class Mapping(BaseControlledValidator):
         )
 
     def __init__(self, keys=None, values=None, container=None):
-        self.keys_type = keys and keys() or Whatever()
-        self.values_type = values and values() or Whatever()
+        # keys should be hashble and comparable
+        self.keys_type = (
+            HasAttr("__eq__") & HasAttr("__hash__") & (keys or Whatever)
+        )
+        self.values_type = values or Whatever
         self.container_type = container or abc.Mapping
 
 
-class BaseCombinator(BaseControlledValidator):
+class NAryConstructor(BaseControlledValidator):
     """
     Base class for any validator that binds a bunch of other validators
     together. See SomeOf and CombineFrom code below.
     """
-    inner_types = Container(
-        InstanceOf(PredicateController), container=tuple
+
+    combined_from = Container(
+        InstanceOf(PredicateController), container=list
     )
 
-    def __init__(self, *inner_types):
-        self.inner_types = tuple(controller() for controller in inner_types)
+    def __init__(self, *combine_from):
+        self.combined_from = list(controller() for controller in combine_from)
 
 
-class Or(BaseCombinator):
+class Or(NAryConstructor):
+
     def predicate(self, value):
-        return any(checker.predicate(value) for checker in self.inner_types)
+        return any(checker.predicate(value) for checker in self.combined_from)
 
 
-class And(BaseCombinator):
+class And(NAryConstructor):
+
     def predicate(self, value):
-        return all(checker.predicate(value) for checker in self.inner_types)
+        return all(checker.predicate(value) for checker in self.combined_from)
 
 
-class Xor(BaseCombinator):
-    """
-    Represents XOR operator for validators.
-    """
+class Xor(NAryConstructor):
+
     def predicate(self, value):
         return reduce(
             xor,
-            (checker.predicate(value) for checker in self.inner_types),
+            (checker.predicate(value) for checker in self.combined_from),
             False
         )
+
+# Aliase name, does it make any sense to you?
+Choose = Xor
 

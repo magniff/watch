@@ -6,7 +6,8 @@ import py.test
 
 from watch import WatchMe, Predicate
 from watch.builtins import (
-    Not, Or, And, Xor, Whatever, Container, InstanceOf, Mapping, Just
+    Not, Or, And, Xor, Whatever, Container, InstanceOf, Mapping, Just,
+    GtThen, LtThen, Nullable
 )
 
 
@@ -18,6 +19,35 @@ CASES = [
             (5, True),
             (6, False),
             ("hello", False),
+        ]
+    ),
+    # Nullable + Just
+    (
+        Nullable(Just(5)),
+        [
+            (5, True),
+            (6, False),
+            (None, True),
+        ]
+    ),
+    # Greater
+    (
+        GtThen(5),
+        [
+            (4, False),
+            (5, False),
+            (6, True),
+            (6.0, True),
+        ]
+    ),
+    # Lesser
+    (
+        LtThen(5),
+        [
+            (10, False),
+            (5, False),
+            (4, True),
+            (4.0, True),
         ]
     ),
     # InstanceOf(int)
@@ -102,7 +132,7 @@ CASES = [
     # simple Container
     (
         Container(
-            items=Predicate(lambda value: value > 0),
+            items=And(InstanceOf(int), GtThen(0)),
             container=Iterable
         ),
         [
@@ -115,7 +145,7 @@ CASES = [
             ),
             # WARNING: validation messes up generators
             (
-                (value for value in range(10)), False
+                (value for value in range(-10, 10)), False
             ),
             (
                 (value for value in range(1,10)), True
@@ -140,6 +170,22 @@ CASES = [
 ]
 
 MAGIC_CASES = [
+    # Not
+    (
+        ~Just("helloworld"),
+        [
+            ("helloworld", False),
+            (10, True),
+        ]
+    ),
+    # Not Not
+    (
+        ~~Just("helloworld"),
+        [
+            ("helloworld", True),
+            (10, False),
+        ]
+    ),
     # OR
     (
         Predicate(lambda value: value > 0) | Predicate(lambda value: value < 0),
@@ -158,7 +204,7 @@ MAGIC_CASES = [
             (5, True),
         ]
     ),
-    # OR(Just | Whatever): should fAndback to Whatever
+    # OR(Just | Whatever): should falldback to Whatever
     (
         Just(5) | Just(6) | Whatever,
         [
@@ -167,16 +213,66 @@ MAGIC_CASES = [
             ("hello", True),
         ]
     ),
-    # Mapping + Justs
+    # Greater
     (
-        Mapping(keys=InstanceOf(int), values=Just(True)|Just(False)),
+        InstanceOf(int) < 100,
+        [
+            (10, True),
+            (10.1, False),
+            (200, False),
+            (-10, True),
+            (0, True),
+        ]
+    ),
+    # Mapping + Just
+    (
+        Mapping(
+            keys=InstanceOf(int),
+            values=Just(True)|Just(False),
+            container=dict
+        ),
         [
             (
+                # maps ints to bools
                 {value: value % 2 for value in range(10)}, True
             ),
             (
-                {value: value for value in range(10)}, False
+                # maps ints to ints
+                {value: value ** 2 for value in range(10)}, False
             ),
+        ]
+    ),
+    # This same Mapping + Just, yet more magic
+    (
+        InstanceOf(int) >> (Just(True) | Just(False)),
+        [
+            (
+                # sanity check
+                "helloworld", False
+            ),
+            (
+                # maps ints to bools
+                {value: value % 2 for value in range(10)}, True
+            ),
+            (
+                # maps ints to ints
+                {value: value ** 2 for value in range(10)}, False
+            ),
+        ]
+    ),
+    # Container of ints + GT/LT
+    (
+        Container(
+            items=(
+                Just("hello") | InstanceOf(int) & (LtThen(0) | GtThen(10))
+            ),
+            container=list,
+        ),
+        [
+            ([-1, -2, 20], True),
+            ([-1, "hello", 20], True),
+            ([-1, -2.0, 20], False),
+            ([-1, 4, 20], False),
         ]
     ),
 ]
@@ -195,12 +291,12 @@ def cases(case_spec):
     "validator,value_to_test,expected_result", cases(CASES)
 )
 def test_validators(validator, value_to_test, expected_result):
-    assert validator.predicate(value_to_test) == expected_result
+    assert validator().predicate(value_to_test) == expected_result
 
 
 @py.test.mark.parametrize(
     "validator,value_to_test,expected_result", cases(MAGIC_CASES)
 )
 def test_magics(validator, value_to_test, expected_result):
-    assert validator.predicate(value_to_test) == expected_result
+    assert validator().predicate(value_to_test) == expected_result
 
