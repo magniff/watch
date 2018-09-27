@@ -286,17 +286,19 @@ MAGIC_CASES = [
     ),
     # Mappings + GT, same good old taste, new experience
     (
-        (InstanceOf(int) > 0) >> (InstanceOf(str) >> InstanceOf(str)),
+        (
+            (InstanceOf(int) > 0) >> (InstanceOf(str) >> Just(True, False))
+        ),
         [
             ("hello", False),
             ({value: str(value) for value in range(1, 10)}, False),
             ({value: str(value) for value in range(-10, 0)}, False),
             (
                 {
-                    1: {"hello": "world"},
+                    1: {"hello": True},
                     2: {
-                        "more": "stuff",
-                        "this": "is_sparta"
+                        "more": False,
+                        "this": True,
                     },
                 },
                 True

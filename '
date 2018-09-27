@@ -231,17 +231,16 @@ class Xor(NAryConstructor):
 
 
 class Just(BaseControlledValidator):
-
-    test_against = And(
+    test_against = Or(
         Container(HasAttr("__eq__"), container=list),
-        Predicate(lambda value: len(value) > 0),
+        HasAttr("__eq__")
     )
 
     def predicate(self, value):
-        return value in self.test_against
+        return self.test_against == value
 
-    def __init__(self, *values):
-        self.test_against = list(values)
+    def __init__(self, value):
+        self.test_against = value
 
 
 # Alias name, does it make sense to you?
