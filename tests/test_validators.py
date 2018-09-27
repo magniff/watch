@@ -245,6 +245,8 @@ MAGIC_CASES = [
     # This same Mapping + Just, yet more magic
     (
         InstanceOf(int) >> (Just(True) | Just(False)),
+        # Just also supports multiple values as initializer:
+        # InstanceOf(int) >> Just(True, False)
         [
             (
                 # sanity check

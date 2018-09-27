@@ -168,7 +168,7 @@ class Container(BaseControlledValidator):
 class Mapping(BaseControlledValidator):
     """
     Pretty much what you expect - maps keys to values, which are
-    controlled by keys_type and values_type validator respectively.
+    controlled by 'keys' and 'values' validators respectively.
     """
 
     keys_type = InstanceOf(PredicateController)
