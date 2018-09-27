@@ -1,4 +1,4 @@
-from copy import deepcopy
+import copy
 
 
 class AttributeDescriptor:
@@ -57,15 +57,19 @@ class AttributeControllerMeta(type):
 
     def __new__(cls, name, bases, attrs):
         for name, value in attrs.items():
-            value_is_descriptor_class = (
-                isinstance(value, type) and
-                issubclass(value, AttributeDescriptor)
+            is_value_descriptor = (
+                isinstance(value, AttributeDescriptor) or
+                (
+                    isinstance(value, type) and
+                    issubclass(value, AttributeDescriptor)
+                )
             )
-
-            if isinstance(value, AttributeDescriptor) or value_is_descriptor_class:
-                value = deepcopy(value())
-                value.field_name = name
-                attrs[name] = value
+            if is_value_descriptor:
+                # each watched typed receives its own copy of
+                # descriptor instance
+                value_snapshot = copy.deepcopy(value())
+                value_snapshot.field_name = name
+                attrs[name] = value_snapshot
 
         return super().__new__(cls, name, bases, attrs)
 

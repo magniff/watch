@@ -47,7 +47,8 @@ class InstanceOf(BaseControlledValidator):
 
 
 class Not(BaseControlledValidator):
-    """Negates the result of nested validator.
+    """
+    Negates the result of nested validator.
     """
     inner_checker = InstanceOf(PredicateController)
 
@@ -76,7 +77,8 @@ class SubclassOf(BaseControlledValidator):
 
 
 class HasAttr(BaseControlledValidator):
-    """Checks that value has given attribute.
+    """
+    Checks that value has given attribute.
     """
     attr_name = InstanceOf(str)
 
@@ -98,26 +100,33 @@ class EqualsTo(BaseControlledValidator):
 
 
 class Container(BaseControlledValidator):
-    """Container for stuff, every item of which passed to additional
+    """
+    Container of stuff, every item of which is passed to additional
     inner_type validator.
     Example: Container(Predicate(lambda value: value == 5))
+    WARNING: validation actually iterates over the container, thus in some
+    cases (e.g. generators) validation may screw up your container.
     """
-    inner_type = InstanceOf(PredicateController)
+    inner_validator = InstanceOf(PredicateController)
     container_type = SubclassOf(abc.Iterable)
 
     def predicate(self, value):
         return (
             isinstance(value, self.container_type) and
-            all(self.inner_type.predicate(item) for item in value)
+            all(self.inner_validator.predicate(item) for item in value)
         )
 
-    def __init__(self, inner_type=Whatever, container_type=list):
-        self.inner_type = inner_type()
+    def __init__(self, inner_validator=Whatever, container_type=abc.Iterable):
+        """NOTE: strings and all kinds of mappings have the same Iterable
+        interface, so choose wisely.
+        """
+        self.inner_validator = inner_validator()
         self.container_type = container_type
 
 
 class Mapping(BaseControlledValidator):
-    """Pretty much what you expect - maps keys to values, which are
+    """
+    Pretty much what you expect - maps keys to values, which are
     controlled by keys_type and values_type validator respectively.
     """
     keys_type = InstanceOf(PredicateController)
@@ -139,7 +148,8 @@ class Mapping(BaseControlledValidator):
 
 
 class BaseCombinator(BaseControlledValidator):
-    """Base class for any validator that binds a bunch of other validators
+    """
+    Base class for any validator that binds a bunch of other validators
     together. See SomeOf and CombineFrom code below.
     """
     inner_types = Container(
@@ -151,14 +161,16 @@ class BaseCombinator(BaseControlledValidator):
 
 
 class Any(BaseCombinator):
-    """This is just a fancy way to say OR speaking of validators.
+    """
+    This is just a fancy way to say OR speaking of validators.
     """
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
 
 class All(BaseCombinator):
-    """Represents AND operator for validators.
+    """
+    Represents AND operator for validators.
     """
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
