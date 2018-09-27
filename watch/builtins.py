@@ -167,23 +167,17 @@ class BaseCombinator(BaseControlledValidator):
         self.inner_types = tuple(controller() for controller in inner_types)
 
 
-class Any(BaseCombinator):
-    """
-    This is just a fancy way to say OR speaking of validators.
-    """
+class Or(BaseCombinator):
     def predicate(self, value):
         return any(checker.predicate(value) for checker in self.inner_types)
 
 
-class All(BaseCombinator):
-    """
-    Represents AND operator for validators.
-    """
+class And(BaseCombinator):
     def predicate(self, value):
         return all(checker.predicate(value) for checker in self.inner_types)
 
 
-class Choose(BaseCombinator):
+class Xor(BaseCombinator):
     """
     Represents XOR operator for validators.
     """

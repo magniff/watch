@@ -41,13 +41,13 @@ class PredicateController(AttributeDescriptor, ):
     predicate = None
 
     def __or__(self, other):
-        return watch.builtins.Any(self, other())
+        return watch.builtins.Or(self, other())
 
     def __and__(self, other):
-        return watch.builtins.All(self, other())
+        return watch.builtins.And(self, other())
 
     def __xor__(self, other):
-        return watch.builtins.Choose(self, other())
+        return watch.builtins.Xor(self, other())
 
     def __set__(self, passed_instance, value):
         if self.predicate(value):

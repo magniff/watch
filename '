@@ -6,7 +6,7 @@ import py.test
 
 from watch import WatchMe, Predicate
 from watch.builtins import (
-    Not, Or, And, Xor, Whatever, Container, InstanceOf, Mapping, Just
+    Not, Any, All, Just, Whatever, Container, InstanceOf, Choose, Mapping
 )
 
 
@@ -16,20 +16,16 @@ CASES = [
         Just(5),
         [
             (5, True),
-            (6, False),
             ("hello", False),
         ]
-    ),
     # InstanceOf(int)
     (
         InstanceOf(int),
         [
             (10, True),
             (1.1, False),
-            ("helloworld", False),
-            (True, True),
-            (False, True),
         ]
+    ),
     ),
     # simple predicate
     (
@@ -57,7 +53,7 @@ CASES = [
     ),
     # simple OR validator: ints or strings
     (
-        Or(
+        Any(
             Predicate(
                 lambda value: isinstance(value, str)
             ),
@@ -73,7 +69,7 @@ CASES = [
     ),
     # basic XOR validator
     (
-        Xor(
+        Choose(
             Predicate(lambda value: value > 10),
             Predicate(lambda value: value < 20),
         ),
@@ -85,7 +81,7 @@ CASES = [
     ),
     # simple AND: palindromic strings with len > 0
     (
-        And(
+        All(
             Predicate(lambda value: isinstance(value, str)),
             Predicate(lambda value: len(value) > 0),
             Predicate(lambda value: value == value[::-1]),
@@ -158,7 +154,7 @@ MAGIC_CASES = [
             (5, True),
         ]
     ),
-    # OR(Just | Whatever): should fAndback to Whatever
+    # OR(Just | Whatever): should fallback to Whatever
     (
         Just(5) | Just(6) | Whatever,
         [
