@@ -11,9 +11,8 @@ install:
         - pip install codecov
         - python setup.py develop
 
-script: py.test tests/
+script: py.test --cov=./watch tests/
 
 after_success:
-        - coveralls
         - codecov
 
