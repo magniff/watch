@@ -275,7 +275,36 @@ MAGIC_CASES = [
             ([-1, 4, 20], False),
         ]
     ),
+    # Mappings + GT
+    (
+        (InstanceOf(int) > 0) >> InstanceOf(str),
+        [
+            ("hello", False),
+            ({value: str(value) for value in range(1, 10)}, True),
+            ({value: str(value) for value in range(-10, 0)}, False),
+        ]
+    ),
+    # Mappings + GT, same good old taste, new experience
+    (
+        (InstanceOf(int) > 0) >> (InstanceOf(str) >> InstanceOf(str)),
+        [
+            ("hello", False),
+            ({value: str(value) for value in range(1, 10)}, False),
+            ({value: str(value) for value in range(-10, 0)}, False),
+            (
+                {
+                    1: {"hello": "world"},
+                    2: {
+                        "more": "stuff",
+                        "this": "is_sparta"
+                    },
+                },
+                True
+            ),
+        ]
+    ),
 ]
+
 
 def cases(case_spec):
 

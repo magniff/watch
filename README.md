@@ -4,16 +4,15 @@
 This very basic library I found myself reimplementing over and over again in different projects, so I finaly decided to put an end to such thankless monkey job, duuuuh. Long story short, this piece of code represents a tiny framework aimed to build object's attributes validators.
 
 ### Motivation
-The main goal of that library is to get rid of code like this one:
+The main goal of that library is to get rid of pesky validation code:
 ```python
 class MyClass:
-    def __init__(self, foo, bar):
+    def __init__(self, some_mappings):
        assert isinstance(foo, (tuple, list)) and all(isinstance(item, int) for item in foo)
        assert isinstance(bar, str)
        self.this_should_list_of_ints = foo
        self.and_this_should_be_string = bar
 ```
-Usually you heavily rely on types or values of your attributes.
 Note, that you should perform these assertions each time you set attributes foo and bar in order to keep your state consistent.
 From my point of view it would be way claner to have the validation expressed like this (pseudocode):
 ```python
@@ -25,7 +24,7 @@ class MyClass:
         self.foo = foo
         self.bar = bar
 ```
-If that makes sense to you, have a look on `Watch` library. Here is a little example:
+If that makes sense to you, have a look on `watch` library. Here is a little example:
 ```python
 import watch
 class MyClass(watch.WatchMe):

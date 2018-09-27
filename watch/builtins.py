@@ -153,7 +153,8 @@ class Container(BaseControlledValidator):
     Container of stuff, every item of which is passed to additional
     inner_type validator.
     Example: Container(Gt(5) & Lt(10))
-    WARNING: validation actually iterates over the container, thus in some
+
+    Warning: validation actually iterates over the container, thus in some
     cases (e.g. generators) validation may screw up your container.
     """
 
@@ -238,6 +239,6 @@ class Xor(NAryConstructor):
             False
         )
 
-# Aliase name, does it make any sense to you?
+# Alias name, does it make sense to you?
 Choose = Xor
 
