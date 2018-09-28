@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from numbers import Number
 
 
 import py.test
@@ -6,8 +7,8 @@ import py.test
 
 from watch import WatchMe, Predicate
 from watch.builtins import (
-    Not, Or, And, Xor, Whatever, Nothing, Container, InstanceOf, Mapping,
-    Just, GtThen, LtThen, LtEqThen, GtEqThen, Nullable
+    Not, Or, And, Xor, Whatever, Nothing, Container, InstanceOf, SubclassOf,
+    Mapping, Just, GtThen, LtThen, LtEqThen, GtEqThen, Nullable
 )
 
 
@@ -90,6 +91,17 @@ CASES = [
             ("helloworld", True),
             (True, True),
             (False, True),
+        ]
+    ),
+    # SubclassOf(Number) but not bool
+    (
+        SubclassOf(Number) & ~Just(bool),
+        [
+            (int, True),
+            (float, True),
+            (complex, True),
+            (str, False),
+            (bool, False),
         ]
     ),
     # simple predicate
