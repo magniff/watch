@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from numbers import Number
+from itertools import chain
 
 
 import py.test
@@ -91,17 +92,6 @@ CASES = [
             ("helloworld", True),
             (True, True),
             (False, True),
-        ]
-    ),
-    # SubclassOf(Number) but not bool
-    (
-        SubclassOf(Number) & ~Just(bool),
-        [
-            (int, True),
-            (float, True),
-            (complex, True),
-            (str, False),
-            (bool, False),
         ]
     ),
     # simple predicate
@@ -334,7 +324,7 @@ MAGIC_CASES = [
             ),
         ]
     ),
-    # Container of ints + GT/LT
+    # Container of ints or just a "hello" + GT/LT
     (
         Container(
             items=(
@@ -365,8 +355,12 @@ MAGIC_CASES = [
         ),
         [
             ("hello", False),
-            ({value: str(value) for value in range(1, 10)}, False),
-            ({value: str(value) for value in range(-10, 0)}, False),
+            (
+                {value: str(value) for value in range(1, 10)}, False
+            ),
+            (
+                {value: str(value) for value in range(-10, 0)}, False
+            ),
             (
                 {
                     1: {"hello": True},
@@ -379,12 +373,34 @@ MAGIC_CASES = [
             ),
         ]
     ),
+    # SubclassOf(Number) but not bool
+    (
+        SubclassOf(Number) & ~Just(bool),
+        [
+            (int, True),
+            (float, True),
+            (complex, True),
+            (str, False),
+            (bool, False),
+        ]
+    ),
+    # Similar to the prev one, but using Xor
+    (
+        SubclassOf(Number) ^ Just(bool) ^ Just(int),
+        [
+            (int, False),
+            (float, True),
+            (complex, True),
+            (str, False),
+            (bool, False),
+        ]
+    ),
 ]
 
 
-def cases(case_spec):
+def cases(*cases):
 
-    for case in case_spec:
+    for case in chain(*cases):
         validator, examples = case
         for (test_value, test_result) in examples:
             yield (validator, test_value, test_result)
@@ -393,15 +409,8 @@ def cases(case_spec):
 
 
 @py.test.mark.parametrize(
-    "validator,value_to_test,expected_result", cases(CASES)
+    "validator,value_to_test,expected_result", cases(CASES, MAGIC_CASES)
 )
 def test_validators(validator, value_to_test, expected_result):
-    assert validator().predicate(value_to_test) == expected_result
-
-
-@py.test.mark.parametrize(
-    "validator,value_to_test,expected_result", cases(MAGIC_CASES)
-)
-def test_magics(validator, value_to_test, expected_result):
     assert validator().predicate(value_to_test) == expected_result
 

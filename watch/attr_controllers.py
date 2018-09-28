@@ -108,6 +108,26 @@ class WatchMe(metaclass=AttributeControllerMeta):
     """Inherit this class to make your class controlled by watch.
     """
 
+    is_active = True
+
+    def __setattr__(self, attr_name, attr_value):
+        # lookup the attribute handler directly from the self type
+        descriptor = getattr(self.__class__, attr_name, None)
+
+        if isinstance(descriptor, PredicateController):
+            if self.is_active:
+                # if found attribute handler belongs to watch library,
+                # and validation is enabled, then pass the attr_value to
+                # the descriptor object.
+                descriptor.__set__(self, attr_value)
+            else:
+                # if handler belongs to watch, but validation is disabled,
+                # then just set the value to the objects dict.
+                self.__dict__[attr_name] = attr_value
+        else:
+            # in this case someone else will handle this setattr call
+            super().__setattr__(attr_name, attr_value)
+
     def generate_error_message(self, field_name, value):
         return (
             "Failed to set attribute '%s' of object %s to be %s." %

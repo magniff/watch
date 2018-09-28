@@ -9,31 +9,21 @@ class MyClass(WatchMe):
     foo = Container(InstanceOf(str) >> InstanceOf(int))
 
 
-my_obj = MyClass()
+instance = MyClass()
 foo = [{'a': 1, 'b': 2, 'c': 3, 'd': 4}]
-my_obj.foo = foo
-
-
-def bench_get():
-    return my_obj.foo
 
 
 def bench_set():
-    my_obj.foo = foo
-
-
-my_obj_missing = MyClass()
-
-
-def bench_get_missing():
-    try:
-        my_obj_missing.foo
-    except AttributeError:
-        pass
+    instance.foo = foo
 
 
 runner = perf.Runner()
-runner.bench_func("__get__", bench_get)
-runner.bench_func("__set__", bench_set)
-runner.bench_func("__get__missing", bench_get_missing)
+
+
+WatchMe.active = True
+runner.bench_func("set: valve open", bench_set)
+
+
+WatchMe.active = False
+runner.bench_func("set: valve close", bench_set)
 
