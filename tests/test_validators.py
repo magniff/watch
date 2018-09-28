@@ -6,8 +6,8 @@ import py.test
 
 from watch import WatchMe, Predicate
 from watch.builtins import (
-    Not, Or, And, Xor, Whatever, Container, InstanceOf, Mapping, Just,
-    GtThen, LtThen, Nullable
+    Not, Or, And, Xor, Whatever, Nothing, Container, InstanceOf, Mapping,
+    Just, GtThen, LtThen, LtEqThen, GtEqThen, Nullable
 )
 
 
@@ -40,12 +40,32 @@ CASES = [
             (6.0, True),
         ]
     ),
+    # Greater or Equal
+    (
+        GtEqThen(5),
+        [
+            (4, False),
+            (5, True),
+            (6, True),
+            (6.0, True),
+        ]
+    ),
     # Lesser
     (
         LtThen(5),
         [
             (10, False),
             (5, False),
+            (4, True),
+            (4.0, True),
+        ]
+    ),
+    # Lesser or Equal
+    (
+        LtEqThen(5),
+        [
+            (10, False),
+            (5, True),
             (4, True),
             (4.0, True),
         ]
@@ -57,6 +77,17 @@ CASES = [
             (10, True),
             (1.1, False),
             ("helloworld", False),
+            (True, True),
+            (False, True),
+        ]
+    ),
+    # InstanceOf(int, str)
+    (
+        InstanceOf(int, str),
+        [
+            (10, True),
+            (1.1, False),
+            ("helloworld", True),
             (True, True),
             (False, True),
         ]
@@ -169,6 +200,7 @@ CASES = [
     ),
 ]
 
+
 MAGIC_CASES = [
     # Not
     (
@@ -195,6 +227,16 @@ MAGIC_CASES = [
             (0, False),
         ]
     ),
+    # multiple XOR operands are not allowed to be True at the same time
+    # meaning that value does not belong to corresponding set intersection
+    (
+        InstanceOf(int) & (GtThen(10) ^ LtThen(20)),
+        [
+            (1, True),
+            (30, True),
+            (15, False),
+        ]
+    ),
     # OR(Just)
     (
         Just(5) | Just(6),
@@ -204,13 +246,22 @@ MAGIC_CASES = [
             (5, True),
         ]
     ),
-    # OR(Just | Whatever): should falldback to Whatever
+    # OR(Just, Whatever): should falldback to Whatever
     (
         Just(5) | Just(6) | Whatever,
         [
             (6, True),
             (5, True),
             ("hello", True),
+        ]
+    ),
+    # And(Just, Nothing): should falldback to Nothing
+    (
+        (Just(5) | Just(6)) & Nothing,
+        [
+            (6, False),
+            (5, False),
+            ("hello", False),
         ]
     ),
     # Greater
@@ -222,6 +273,16 @@ MAGIC_CASES = [
             (200, False),
             (-10, True),
             (0, True),
+        ]
+    ),
+    # Ints > 0 but not 100
+    (
+        (InstanceOf(int) > 0) & ~Just(100),
+        [
+            (10, True),
+            (90, True),
+            (200, True),
+            (100, False),
         ]
     ),
     # Mapping + Just
@@ -244,9 +305,8 @@ MAGIC_CASES = [
     ),
     # This is the same Mapping + Just case, yet even more magical
     (
-        InstanceOf(int) >> (Just(True) | Just(False)),
-        # Just also supports multiple values as initializer:
-        # InstanceOf(int) >> Just(True, False)
+        InstanceOf(int) >> Just(True, False),
+        # or simply InstanceOf(int) >> InstanceOf(bool)
         [
             (
                 # sanity check

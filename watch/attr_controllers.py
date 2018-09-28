@@ -10,10 +10,10 @@ class AttributeDescriptor:
     """
 
     def __getattr__(self, attribute):
-        if attribute == 'field_name':
+        if attribute == "field_name":
             raise TypeError(
-                'In order to use %s as a descriptor-validator, you should '
-                'inherit your class from watch.WatchMe.' % repr(self)
+                "In order to use %s as a descriptor-validator, you should "
+                "inherit your class from watch.WatchMe." % repr(self)
             )
         return super().__getattribute__(attribute)
 
@@ -112,7 +112,7 @@ class WatchMe(metaclass=AttributeControllerMeta):
         return (
             "Failed to set attribute '%s' of object %s to be %s." %
             (
-                field_name, object.__repr__(self), object.__repr__(value)
+                field_name, object.__repr__(self), value
             )
         )
 
