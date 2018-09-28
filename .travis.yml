@@ -12,7 +12,7 @@ install:
         - pip install pytest-cov
         - python setup.py develop
 
-script: py.test --cov=. tests/
+script: py.test --cov=./watch/ tests/
 
 after_success:
         - codecov
