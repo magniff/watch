@@ -1,4 +1,4 @@
 [run]
 branch = True
-source = .
+source = ./watch/
 
