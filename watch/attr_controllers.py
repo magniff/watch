@@ -108,6 +108,8 @@ class WatchMe(metaclass=AttributeControllerMeta):
     """Inherit this class to make your class controlled by watch.
     """
 
+    # global validation flag, override it for any child type or even certain
+    # instance to disable validation
     is_active = True
 
     def __setattr__(self, attr_name, attr_value):
@@ -116,17 +118,20 @@ class WatchMe(metaclass=AttributeControllerMeta):
 
         if isinstance(descriptor, PredicateController):
             if self.is_active:
-                # if found attribute handler belongs to watch library,
+                # if found attribute handler belongs to the watch library,
                 # and validation is enabled, then pass the attr_value to
-                # the descriptor object.
+                # the found handler object.
                 descriptor.__set__(self, attr_value)
             else:
                 # if handler belongs to watch, but validation is disabled,
                 # then just set the value to the objects dict.
                 self.__dict__[attr_name] = attr_value
         else:
-            # in this case someone else will handle this setattr call
+            # in that case someone else will handle this setattr call, probably
+            # object or some sort of mixin type.
             super().__setattr__(attr_name, attr_value)
+
+        return None
 
     def generate_error_message(self, field_name, value):
         return (
