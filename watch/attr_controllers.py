@@ -10,10 +10,10 @@ class AttributeDescriptor:
     """
 
     def __getattr__(self, attribute):
-        if attribute == 'field_name':
+        if attribute == "field_name":
             raise TypeError(
-                'In order to use %s as a descriptor-validator, you should '
-                'inherit your class from watch.WatchMe.' % repr(self)
+                "In order to use %s as a descriptor-validator, you should "
+                "inherit your class from watch.WatchMe." % repr(self)
             )
         return super().__getattribute__(attribute)
 
@@ -108,11 +108,36 @@ class WatchMe(metaclass=AttributeControllerMeta):
     """Inherit this class to make your class controlled by watch.
     """
 
+    # global validation flag, override it for any child type or even certain
+    # instance to disable validation
+    is_active = True
+
+    def __setattr__(self, attr_name, attr_value):
+        # lookup the attribute handler directly from the self type
+        descriptor = getattr(self.__class__, attr_name, None)
+
+        if isinstance(descriptor, PredicateController):
+            if self.is_active:
+                # if found attribute handler belongs to the watch library,
+                # and validation is enabled, then pass the attr_value to
+                # the found handler object.
+                descriptor.__set__(self, attr_value)
+            else:
+                # if handler belongs to watch, but validation is disabled,
+                # then just set the value to the objects dict.
+                self.__dict__[attr_name] = attr_value
+        else:
+            # in that case someone else will handle this setattr call, probably
+            # object or some sort of mixin type.
+            super().__setattr__(attr_name, attr_value)
+
+        return None
+
     def generate_error_message(self, field_name, value):
         return (
             "Failed to set attribute '%s' of object %s to be %s." %
             (
-                field_name, object.__repr__(self), object.__repr__(value)
+                field_name, object.__repr__(self), value
             )
         )
 

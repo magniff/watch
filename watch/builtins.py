@@ -43,36 +43,40 @@ Nothing = Predicate(lambda item: False)
 
 
 class InstanceOf(BaseControlledValidator):
-    type_to_check = Predicate(lambda item: isinstance(item, type))
+    types = Predicate(
+        lambda value: (
+            isinstance(value, abc.Iterable) and len(value) > 0 and
+            all(isinstance(subvalue, type) for subvalue in value)
+        )
+    )
 
     def predicate(self, value):
-        return isinstance(value, self.type_to_check)
+        return isinstance(value, self.types)
 
-    def __init__(self, type_to_check):
-        self.type_to_check = type_to_check
+    def __init__(self, *types):
+        self.types = tuple(types)
 
 
 class SubclassOf(BaseControlledValidator):
-    type_to_check_against = InstanceOf(type)
-    type_to_check = InstanceOf(type)
+    types = Predicate(
+        lambda value: (
+            isinstance(value, abc.Iterable) and
+            all(isinstance(subvalue, type) for subvalue in value)
+        )
+    )
 
     def predicate(self, value):
-        # validates value
-        self.type_to_check = value
+        return isinstance(value, type) and issubclass(value, self.types)
 
-        return (
-            isinstance(value, type) and
-            issubclass(value, self.type_to_check_against)
-        )
-
-    def __init__(self, type_to_check_against):
-        self.type_to_check_against = type_to_check_against
+    def __init__(self, *types):
+        self.types = tuple(types)
 
 
 class Not(BaseControlledValidator):
     """
     Negates the result of nested validator.
     """
+
     inner_checker = InstanceOf(PredicateController)
 
     def predicate(self, value):
@@ -111,7 +115,6 @@ class LtEqThen(AgnosticComparator):
 
     def predicate(self, value):
         return value <= self.value_to_check_against
-
 
 
 class Nullable(BaseControlledValidator):
@@ -194,11 +197,18 @@ class Mapping(BaseControlledValidator):
 class NAryConstructor(BaseControlledValidator):
     """
     Base class for any validator that binds a bunch of other validators
-    together. See the code for And and Or nodes below.
+    together. See the code for And, Or and Xor nodes below.
     """
 
-    combined_from = Container(
-        InstanceOf(PredicateController), container=list
+    combined_from = Predicate(
+        lambda value: (
+            isinstance(value, abc.Iterable) and
+            len(value) > 0 and
+            all(
+                isinstance(subvalue, PredicateController) for
+                subvalue in value
+            )
+        )
     )
 
     def __init__(self, *combine_from):
@@ -228,6 +238,10 @@ class Xor(NAryConstructor):
 
 
 class Just(BaseControlledValidator):
+    """Just is an exact match validator, e.g. Just(10) is True only
+    for the value of 10.  Accepts multiple init values at once, e.g.
+    Just(1,2,3) is the same as Just(1) | Just(2) | Just(3)
+    """
 
     test_against = And(
         Container(HasAttr("__eq__"), container=list),
@@ -239,8 +253,4 @@ class Just(BaseControlledValidator):
 
     def __init__(self, *values):
         self.test_against = list(values)
-
-
-# Alias name, does it make sense to you?
-Choose = Xor
 
