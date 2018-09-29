@@ -21,7 +21,7 @@ def test_toggle_scenario_for_types():
     with py.test.raises(AttributeError):
         b.foo = "hello"
 
-    A.is_active = False
+    A.keep_eye_on_me = False
     a.foo = "hello"
     assert a.foo == "hello"
 
@@ -30,7 +30,7 @@ def test_toggle_scenario_for_types():
         b.foo = "hello"
 
     # now watch is disabled globaly
-    watch.WatchMe.is_active = False
+    watch.WatchMe.keep_eye_on_me = False
 
     a.foo = "hello"
     assert a.foo == "hello"
@@ -38,7 +38,7 @@ def test_toggle_scenario_for_types():
     b.foo = "hello"
     assert b.foo == "hello"
 
-    watch.WatchMe.is_active = True
+    watch.WatchMe.keep_eye_on_me = True
 
 
 def test_toggle_scenario_for_instances():
@@ -49,7 +49,7 @@ def test_toggle_scenario_for_instances():
     a = A()
     b = A()
 
-    a.is_active = False
+    a.keep_eye_on_me = False
     a.foo = "hello"
     assert a.foo == "hello"
 
@@ -57,5 +57,5 @@ def test_toggle_scenario_for_instances():
     with py.test.raises(AttributeError):
         b.foo = "hello"
 
-    watch.WatchMe.is_active = True
+    watch.WatchMe.keep_eye_on_me = True
 

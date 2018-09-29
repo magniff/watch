@@ -3,19 +3,21 @@ from operator import xor
 from functools import reduce
 
 
-from .attr_controllers import PredicateController, WatchMe
+from .core import PredicateController, WatchMe
 
 
 class BaseControlledValidator(WatchMe, PredicateController):
 
     def generate_error_message(self, field_name, value):
         return (
-            "You tried to init <%s> by something other then another "
-            "validator instance, didnt you?" % type(self).__qualname__
+            "It is not alowed to initilize %s object with a value of %s." %
+            (
+                type(self).__qualname__, value
+            )
         )
 
 
-class Predicate(WatchMe, PredicateController):
+class Predicate(BaseControlledValidator):
     """Validation based on given 'predicate' function.
     """
 
@@ -30,12 +32,6 @@ class Predicate(WatchMe, PredicateController):
 
     def __init__(self, predicate):
         self.predicate = predicate
-
-    def generate_error_message(self, field_name, value):
-        return (
-            "Init <%s> by callable, that takes one arg and returns bool." %
-            type(self).__qualname__
-        )
 
 
 Whatever = Predicate(lambda item: True)

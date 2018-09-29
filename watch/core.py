@@ -110,14 +110,14 @@ class WatchMe(metaclass=AttributeControllerMeta):
 
     # global validation flag, override it for any child type or even certain
     # instance to disable validation
-    is_active = True
+    keep_eye_on_me = True
 
     def __setattr__(self, attr_name, attr_value):
         # lookup the attribute handler directly from the self type
         descriptor = getattr(self.__class__, attr_name, None)
 
         if isinstance(descriptor, PredicateController):
-            if self.is_active:
+            if self.keep_eye_on_me:
                 # if found attribute handler belongs to the watch library,
                 # and validation is enabled, then pass the attr_value to
                 # the found handler object.
