@@ -26,11 +26,15 @@ class AttributeDescriptor:
             return self
         try:
             return passed_instance.__dict__[self.field_name]
-        except KeyError:
-            raise AttributeError(
-                "Object %s has no attribute '%s'." %
-                (passed_instance, self.field_name)
+        except KeyError as key_error:
+            attribute_error = AttributeError(
+                "%s object has no attribute '%s'." %
+                (
+                    type(passed_instance).__qualname__, repr(self.field_name)
+                )
             )
+            raise attribute_error from key_error
+
 
     def __set__(self, passed_instance, value):
         passed_instance.__dict__[self.field_name] = value
@@ -93,8 +97,8 @@ class AttributeControllerMeta(type):
             value.field_name = attr_name
         super().__setattr__(attr_name, value)
 
-    def __new__(cls, name, bases, attrs):
-        for name, value in attrs.items():
+    def __new__(cls, class_name, bases, attributes):
+        for name, value in attributes.items():
             is_value_descriptor = (
                 isinstance(value, AttributeDescriptor) or
                 (
@@ -107,9 +111,9 @@ class AttributeControllerMeta(type):
                 # descriptor instance
                 value_snapshot = copy.deepcopy(value())
                 value_snapshot.field_name = name
-                attrs[name] = value_snapshot
+                attributes[name] = value_snapshot
 
-        return super().__new__(cls, name, bases, attrs)
+        return super().__new__(cls, class_name, bases, attributes)
 
 
 class WatchMe(metaclass=AttributeControllerMeta):

@@ -240,7 +240,7 @@ class Just(BaseControlledValidator):
     """
 
     test_against = And(
-        Container(HasAttr("__eq__"), container=list),
+        Container(HasAttr("__eq__"), container=tuple),
         Predicate(lambda value: len(value) > 0),
     )
 
@@ -248,5 +248,5 @@ class Just(BaseControlledValidator):
         return value in self.test_against
 
     def __init__(self, *values):
-        self.test_against = list(values)
+        self.test_against = tuple(values)
 
