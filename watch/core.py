@@ -1,4 +1,6 @@
 import copy
+import abc
+
 
 
 # this should provide watch.builtins, which on its own
@@ -15,7 +17,7 @@ class AttributeDescriptor:
         if attribute == "field_name":
             raise TypeError(
                 "In order to use %s as a descriptor-validator, you should "
-                "inherit your class from watch.WatchMe." % repr(self)
+                "inherit your class from watch.WatchMe type." % repr(self)
             )
         return super().__getattribute__(attribute)
 
@@ -147,7 +149,7 @@ class WatchMe(metaclass=AttributeControllerMeta):
 
     def generate_error_message(self, field_name, value):
         return (
-            "Failed to set attribute '%s' of object %s to be %s." %
+            "watch: Failed to set attribute '%s' of object %s to be %s." %
             (
                 field_name, object.__repr__(self), value
             )
