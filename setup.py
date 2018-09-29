@@ -12,7 +12,7 @@ classifiers = [
 setuptools.setup(
     name="watch",
     description="A stupid monadic fields tracker.",
-    version="0.2.2",
+    version="0.2.3",
     license="MIT license",
     platforms=["unix", "linux", "osx", "win32"],
     author="magniff",
