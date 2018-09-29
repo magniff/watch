@@ -3,10 +3,8 @@ language: python
 os:
         - linux
         - osx
-        - windows
 
 python:
-        - 3.2
         - 3.3
         - 3.4
         - 3.5
