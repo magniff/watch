@@ -1,10 +1,6 @@
 import setuptools
 
 
-with open("README.md") as readme_file:
-    long_description = readme_file.read()
-
-
 classifiers = [
     (
         "Programming Language :: Python :: %s" % x
@@ -16,9 +12,7 @@ classifiers = [
 setuptools.setup(
     name="watch",
     description="A stupid monadic fields tracker.",
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    version="0.2.4",
+    version="0.2.5",
     license="MIT license",
     platforms=["unix", "linux", "osx", "win32"],
     author="magniff",
