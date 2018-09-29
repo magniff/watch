@@ -1,6 +1,8 @@
 import copy
 
 
+# this should provide watch.builtins, which on its own
+# depends on this core module
 import watch
 
 
@@ -49,8 +51,14 @@ class PredicateController(AttributeDescriptor):
     def __gt__(self, value):
         return self & watch.builtins.GtThen(value)
 
+    def __ge__(self, value):
+        return self & watch.builtins.GtEqThen(value)
+
     def __lt__(self, value):
         return self & watch.builtins.LtThen(value)
+
+    def __le__(self, value):
+        return self & watch.builtins.LtEqThen(value)
 
     def __invert__(self):
         return watch.builtins.Not(self)

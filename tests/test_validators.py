@@ -266,15 +266,50 @@ MAGIC_CASES = [
             ("hello", False),
         ]
     ),
-    # Greater
+    # Lesser
     (
         InstanceOf(int) < 100,
         [
             (10, True),
             (10.1, False),
+            (100, False),
             (200, False),
             (-10, True),
             (0, True),
+        ]
+    ),
+    # Lesser or Eq
+    (
+        InstanceOf(int) <= 100,
+        [
+            (10, True),
+            (10.1, False),
+            (100, True),
+            (200, False),
+            (-10, True),
+            (0, True),
+        ]
+    ),
+    # Greater
+    (
+        InstanceOf(int) > 100,
+        [
+            (10, False),
+            (100, False),
+            (200, True),
+            ("helloworld", False),
+            (200.0, False),
+        ]
+    ),
+    # Greater or Eq
+    (
+        InstanceOf(int) >= 100,
+        [
+            (10, False),
+            (100, True),
+            (200, True),
+            ("helloworld", False),
+            (200.0, False),
         ]
     ),
     # Ints > 0 but not 100
