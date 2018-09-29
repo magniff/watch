@@ -8,7 +8,7 @@ This very basic library I found myself reimplementing over and over again for di
 
 ### Motivation
 The main goal of that library is to get rid of pesky validation code:
-```python
+```python3
 from collections.abc import Mapping
 
 class MyClass:
@@ -23,7 +23,7 @@ class MyClass:
 ```
 Note, that you should perform these assertions each time you set `mappings` attribute to keep your state consistent.
 `watch` provides a much cleaner way to define an attribute validator:
-```python
+```python3
 import watch
 from watch.builtins import Container, InstanceOf
 
@@ -43,9 +43,30 @@ You are very welcome to clone this repo and perform installation by running `set
 ### Validators
 Actual list of available validators being significantly reworked for a recent release, so stay tuned for this section. 
 
+### Disabling `watch`
+You can disable validation for a particular set of types and even instances. It is done via manipulation of `is_active` attribute of pretty much any `watch` instance.
+```python3
+>>> import watch
+>>> # foo accept no value whatsoever
+>>> class SomeClass(watch.WatchMe):
+...     foo = watch.builtins.Nothing
+... 
+>>> s = SomeClass()
+>>> s.foo = 10
+AttributeError: Failed to set attribute 'foo' of object <__main__.SomeClass object at 0x7fa477d7ef98> to be 10.
+>>> # Disable validation for this particular instance
+>>> s.is_active = False
+>>> # Now foo accepts values
+>>> s.foo = 10
+>>> # Note, that the flag value does not leak to other instances
+>>> s1 = SomeClass()
+>>> s1.foo = 10
+AttributeError: Failed to set attribute 'foo' of object <__main__.SomeClass object at 0x7fa478491358> to be 10.
+```
+
 ### Limitations
 Note, that the actual validation is based on `__set__` method of attribute descriptor object (see descriptor protocol documentation on python.org web site). Having that said it should be rather clear, that validation of mutable data is (in general) impossible. Condsider following example:
-```python
+```python3
 from watch import WatchMe
 from watch.builtins import Container, InstanceOf
 
@@ -62,7 +83,7 @@ instance.attribute = [1,2,3]
 instance.attribute.append('hello world')
 ```
 Sure you could revalidate attribute by simply reseting it, just like:
-```python
+```python3
 instance.attribute = instance.attribute
 ```
 But that looks weird indeed.
