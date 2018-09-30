@@ -136,7 +136,7 @@ True
 False
 >>> # And so on
 ```
-- `GtThen`, `GtEqThen`, `LtThen`, `LtEqThen` are binary constructors, e.g.
+- `GtThen`, `GtEqThen`, `LtThen`, `LtEqThen` are unary constructors, e.g.
 ```python3
 >>> GtThen(10).predicate(2)
 False
