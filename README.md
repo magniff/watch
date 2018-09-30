@@ -51,7 +51,34 @@ Nothing special, really, just a pinch of good old metaprogramming and attribute'
 Each validator provides a callable method `predicate(value) -> True/False`. This callable gets invoked at validation time to decide whether the value complies the spec.
 
 ### Validators
-Actual list of available validators being significantly reworked for a recent release, so stay tuned for this section. 
+Did I tell you that `watch` is a microframework? No? So, it is, meaning that you should be able to quickly hack together a set of spec checkers, that will make sense to you. Anyways, `watch` comes with a set of predefined validators, that are written in a "monadic" style.
+Here are some:
+```
+from watch.builtins import *
+```
+- `Predicate` validator constructor, that takes an unary function as its single argument and returns function's result interpreted in a boolean context:
+```python3
+>>> Predicate(lambda value: value > 0).predicate(10)
+True
+>>> Predicate(lambda value: value > 0).predicate(-10)
+False
+```
+- `Just` validator constructor, that is super trivial:
+```python3
+>>> Just("hello").predicate("hello")
+True
+>>> Just("hello").predicate(10)
+False
+```
+Is also can take a list of values as an itinialization set:
+```python3
+>>> Just("hello", "world").predicate("hello")
+True
+>>> Just("hello", "world").predicate("world")
+True
+>>> Just("hello", "world").predicate("more")
+False
+```
 
 ### Disabling `watch`
 You can disable validation for a particular set of types and even instances. It is done via manipulation of `is_active` attribute of pretty much any `watch` instance.
