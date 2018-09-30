@@ -13,6 +13,8 @@ from collections.abc import Mapping
 
 class MyClass:
     def __init__(self, mappings):
+       # "mappings" value is expected to be a list of any mappings from
+       # int numbers to strings. Mind how noisy the code becomes.
        assert isinstance(mappings, list)
        for mapping in mappings:
            assert isinstance(mapping, Mapping)
@@ -21,7 +23,7 @@ class MyClass:
                assert isinstance(value, str)
        self.mappings = mappings
 ```
-Note, that you should perform these assertions each time you set `mappings` attribute to keep your state consistent.
+Also, mind that you will have to perform these assertions each time this `mappings` attribute is set.
 `watch` provides a much cleaner way to define an attribute validator:
 ```python3
 import watch
@@ -31,6 +33,8 @@ class MyClass(watch.WatchMe):
      mappings = Container(InstanceOf(int) >> InstanceOf(str), container=list)
 
      def __init__(self, mappings):
+        # now self.mappings is guaranteed to comply a given spec at
+        # program runtime, atleast at __setattr__ time
         self.mappings = mappings
 ```
 Here `Container` invocation defines a validator for surrounding `list` object and `>>` constructs a validator for a dict like object, that maps ints to strings. Looks straightforward enough, right?
@@ -39,6 +43,12 @@ If that makes sense to you, have a look on `watch` library.
 
 ### Installation
 You are very welcome to clone this repo and perform installation by running `setup.py` script. This code also available in `pypi` and goes by name `watch`, so to get it from there just run `pip install watch`.
+
+### How it is done
+Nothing special, really, just a pinch of good old metaprogramming and attribute's descriptor magic, namely `watch` is comprised out of:
+- the `core` module, where a bunch of base classes like `WatchMe` and `PredicateController` got defined.
+- and the `builtins` module, that defines a set of handy validators like `Just`, `Container`, `Mapping`, etc.
+Each validator provides a callable method `predicate(value) -> True/False`. This callable gets invoked at validation time to decide whether the value complies the spec.
 
 ### Validators
 Actual list of available validators being significantly reworked for a recent release, so stay tuned for this section. 
@@ -53,7 +63,7 @@ You can disable validation for a particular set of types and even instances. It 
 ... 
 >>> s = SomeClass()
 >>> s.foo = 10
-AttributeError: Failed to set attribute 'foo' of object <__main__.SomeClass object at 0x7fa477d7ef98> to be 10.
+AttributeError: Failed to set attribute 'foo' of object <SomeClass object at 0x7f...> to be 10.
 >>> # Disable validation for this particular instance
 >>> s.is_active = False
 >>> # Now foo accepts values
@@ -61,7 +71,7 @@ AttributeError: Failed to set attribute 'foo' of object <__main__.SomeClass obje
 >>> # Note, that the flag value does not leak to other instances
 >>> s1 = SomeClass()
 >>> s1.foo = 10
-AttributeError: Failed to set attribute 'foo' of object <__main__.SomeClass object at 0x7fa478491358> to be 10.
+AttributeError: Failed to set attribute 'foo' of object <SomeClass object at 0x7f...> to be 10.
 ```
 
 ### Limitations
