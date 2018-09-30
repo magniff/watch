@@ -32,11 +32,11 @@ runner = perf.Runner()
 
 
 # Check with validation enabled
-WatchMe.is_active = True
+WatchMe.keep_eye_on_me = True
 runner.bench_func("set: validation enabled", bench_set)
 
 # Check with validation disabled
-WatchMe.is_active = False
+WatchMe.keep_eye_on_me = False
 runner.bench_func("set: validation disabled", bench_set)
 
 # Check with a plain type with no watch at all

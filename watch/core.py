@@ -32,7 +32,7 @@ class AttributeDescriptor:
             attribute_error = AttributeError(
                 "%s object has no attribute '%s'." %
                 (
-                    type(passed_instance).__qualname__, repr(self.field_name)
+                    type(passed_instance).__qualname__, self.field_name
                 )
             )
             raise attribute_error from key_error
