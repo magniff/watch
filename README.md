@@ -56,14 +56,14 @@ Here are some:
 ```
 from watch.builtins import *
 ```
-- `Predicate` validator constructor, that takes an unary function as its single argument and returns function's result interpreted in a boolean context:
+- `Predicate` is an unary constructor, that takes an unary function as its single argument and returns function's result interpreted in a boolean context:
 ```python3
 >>> Predicate(lambda value: value > 0).predicate(10)
 True
 >>> Predicate(lambda value: value > 0).predicate(-10)
 False
 ```
-- `Just` validator constructor, that is super trivial:
+- `Just` is an unary constructor, that is super trivial:
 ```python3
 >>> Just("hello").predicate("hello")
 True
@@ -79,14 +79,14 @@ True
 >>> Just("hello", "world").predicate("more")
 False
 ```
-- `InstanceOf` and `SubclassOf` constructors do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
+- `InstanceOf` and `SubclassOf` are nary constructors do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
 ```python3
 >>> InstanceOf(int).predicate(10)
 True
 >>> InstanceOf(10)
 AttributeError: It is not allowed to initialize InstanceOf object with a value of (10,).
 ```
-- `Container` is a unary constructor that wraps an arbitrary validator and yields a validator for iterable, each element of which will be validated with this inner validator, e.g.
+- `Container` is an unary constructor that wraps an arbitrary validator and yields a validator for iterable, each element of which will be validated with this inner validator, e.g.
 ```python3
 >>> Container(InstanceOf(int, str)).predicate(["hello", 1])
 True
@@ -124,6 +124,36 @@ Also there is a magic method based syntax available:
 False
 >>> (~InstanceOf(int)).predicate("hello")
 True
+```
+- `And`, `Or`, `Xor` are nary constructors, that runs inner validators and performs corresponding logical operation.
+Magic method based syntax available:
+```python3
+>>> (InstanceOf(int) | Just("hello")).predicate(10)
+True
+>>> (InstanceOf(int) | Just("hello")).predicate("hello")
+True
+>>> (InstanceOf(int) | Just("hello")).predicate("world")
+False
+>>> # And so on
+```
+- `GtThen`, `GtEqThen`, `LtThen`, `LtEqThen` are binary constructors, e.g.
+```python3
+>>> GtThen(10).predicate(2)
+False
+>>> GtThen(10).predicate(20)
+True
+```
+This validators are usually combined with other validators, e.g.
+```python3
+>>> And(InstanceOf(int), GtThen(10)).predicate(20)
+True
+```
+or, using magic syntax:
+```python3
+>>> (InstanceOf(int) > 10).predicate(20)
+True
+>>> (InstanceOf(int) > 10).predicate(20.0)
+False
 ```
 
 ### Disabling `watch`
