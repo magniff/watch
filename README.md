@@ -79,6 +79,27 @@ True
 >>> Just("hello", "world").predicate("more")
 False
 ```
+- `InstanceOf` and `SubclassOf` constructors do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
+```python3
+>>> InstanceOf(int).predicate(10)
+True
+>>> InstanceOf(10)
+AttributeError: It is not allowed to initialize InstanceOf object with a value of (10,).
+```
+- `Container` constructor wraps some inner validator and yields a validator for iterable, each element of which will be validated with this inner validator, e.g.
+```python3
+>>> Container(InstanceOf(int, str)).predicate(["hello", 1])
+True
+>>> Container(InstanceOf(int, str)).predicate(["hello", 1.0])
+False
+```
+You can also provide an exact type of the container, e.g.
+```python3
+>>> Container(InstanceOf(int, str), container=list).predicate([1,2])
+True
+>>> Container(InstanceOf(int, str), container=tuple).predicate([1,2])
+False
+```
 
 ### Disabling `watch`
 You can disable validation for a particular set of types and even instances. It is done via manipulation of `is_active` attribute of pretty much any `watch` instance.
