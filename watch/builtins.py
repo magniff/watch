@@ -10,7 +10,7 @@ class BaseControlledValidator(WatchMe, PredicateController):
 
     def generate_error_message(self, field_name, value):
         return (
-            "It is not allowed to initilize %s object with a value of %s." %
+            "It is not allowed to initialize %s object with a value of %s." %
             (
                 type(self).__qualname__, value
             )
