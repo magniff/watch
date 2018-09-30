@@ -86,7 +86,7 @@ True
 >>> InstanceOf(10)
 AttributeError: It is not allowed to initialize InstanceOf object with a value of (10,).
 ```
-- `Container` constructor wraps some inner validator and yields a validator for iterable, each element of which will be validated with this inner validator, e.g.
+- `Container` is a unary constructor that wraps an arbitrary validator and yields a validator for iterable, each element of which will be validated with this inner validator, e.g.
 ```python3
 >>> Container(InstanceOf(int, str)).predicate(["hello", 1])
 True
@@ -99,6 +99,31 @@ You can also provide an exact type of the container, e.g.
 True
 >>> Container(InstanceOf(int, str), container=tuple).predicate([1,2])
 False
+```
+- `Mapping` is a binary constructor that is very similar to the `Container` one, yet taylored for mappings instead of iterables, e.g.
+```python3
+>>> Mapping(InstanceOf(int), InstanceOf(str)).predicate({1: "hello"})
+True
+>>> Mapping(InstanceOf(int), InstanceOf(str)).predicate({1: 1})
+False
+```
+Also there is a magic method based syntax available:
+```python3
+>>> (InstanceOf(int) >> InstanceOf(str)).predicate({1: "hello"})
+```
+- `Not` is an unary constructor that wraps an arbitrary validator and negates its result, e.g.
+```python3
+>>> Not(InstanceOf(int)).predicate(10)
+False
+>>> Not(InstanceOf(int)).predicate("hello")
+True
+```
+Also there is a magic method based syntax available:
+```python3
+>>> (~InstanceOf(int)).predicate(10)
+False
+>>> (~InstanceOf(int)).predicate("hello")
+True
 ```
 
 ### Disabling `watch`
