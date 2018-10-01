@@ -70,7 +70,7 @@ True
 >>> Just("hello").predicate(10)
 False
 ```
-It also can take a list of values as an itinialization set:
+It also can take a list of values as an initialization set:
 ```python3
 >>> Just("hello", "world").predicate("hello")
 True
