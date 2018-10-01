@@ -113,16 +113,6 @@ class LtEqThen(AgnosticComparator):
         return value <= self.value_to_check_against
 
 
-class Nullable(BaseControlledValidator):
-    inner_checker = InstanceOf(PredicateController)
-
-    def predicate(self, value):
-        return value is None or self.inner_checker.predicate(value)
-
-    def __init__(self, inner_checker):
-        self.inner_checker = inner_checker
-
-
 class HasAttr(BaseControlledValidator):
     """
     Checks that value has given attribute.

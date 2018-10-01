@@ -9,7 +9,7 @@ import py.test
 from watch import WatchMe, Predicate
 from watch.builtins import (
     Not, Or, And, Xor, Whatever, Nothing, Container, InstanceOf, SubclassOf,
-    Mapping, Just, GtThen, LtThen, LtEqThen, GtEqThen, Nullable
+    Mapping, Just, GtThen, LtThen, LtEqThen, GtEqThen
 )
 
 
@@ -21,15 +21,6 @@ CASES = [
             (5, True),
             (6, False),
             ("hello", False),
-        ]
-    ),
-    # Nullable + Just
-    (
-        Nullable(Just(5)),
-        [
-            (5, True),
-            (6, False),
-            (None, True),
         ]
     ),
     # Greater
