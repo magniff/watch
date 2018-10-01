@@ -51,7 +51,7 @@ Nothing special, really, just a pinch of good old metaprogramming and attribute'
 Each validator provides a callable method `predicate(value) -> True/False`. This callable gets invoked at validation time to decide whether the value complies the spec.
 
 ### Validators
-Did I tell you that `watch` is a microframework? No? So, it is, meaning that you should be able to quickly hack together a set of spec checkers, that will make sense to you. Anyways, `watch` comes with a set of predefined validators, that are written in a "monadic" style.
+Did I tell you that `watch` is a microframework? No? So, it is, meaning that you should be able to quickly hack together a set of useful checkers without any external help. Nevertherless, `watch` comes with a set of predefined validators, that are written in a "monadic" style.
 Here are some:
 ```
 from watch.builtins import *
