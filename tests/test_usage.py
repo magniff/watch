@@ -5,7 +5,6 @@ import watch
 
 
 class Mixin:
-
     def __setattr__(self, attr, value):
         super().__setattr__("checkpoint", True)
         super().__setattr__(attr, value)
@@ -16,7 +15,7 @@ def test_pridicated_bind_to_watchme():
     inherited from WatchMe base class generates an error.
     """
 
-    with py.test.raises(TypeError):
+    with py.test.raises(AttributeError):
 
         class SomeClass:
             foo = watch.builtins.Whatever
@@ -25,7 +24,7 @@ def test_pridicated_bind_to_watchme():
         s.foo = 10
 
 
-def test_pridicated_bind_to_watchme():
+def test_attribute_error():
     """Tests, that AttributeError is not broken by introducing watch lib.
     """
 
