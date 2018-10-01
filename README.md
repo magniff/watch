@@ -79,7 +79,7 @@ True
 >>> Just("hello", "world").predicate("more")
 False
 ```
-- `InstanceOf` and `SubclassOf` are nary constructors do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
+- `InstanceOf` and `SubclassOf` are nary constructors that do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
 ```python3
 >>> InstanceOf(int).predicate(10)
 True
