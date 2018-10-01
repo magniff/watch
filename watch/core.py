@@ -2,7 +2,6 @@ import copy
 import abc
 
 
-
 # this should provide watch.builtins, which on its own
 # depends on this core module
 import watch
@@ -79,11 +78,13 @@ class PredicateController(AttributeDescriptor):
         return watch.builtins.Xor(self, other)
 
     def __set__(self, passed_instance, value):
-        if self.predicate(value):
-            super().__set__(passed_instance, value)
+        if passed_instance.keep_eye_on_me:
+            if self.predicate(value):
+                super().__set__(passed_instance, value)
+            else:
+                passed_instance.complain(self.field_name, value)
         else:
-            passed_instance.complain(self.field_name, value)
-        return None
+            super().__set__(passed_instance, value)
 
     def __call__(self):
         return self
@@ -125,27 +126,6 @@ class WatchMe(metaclass=AttributeControllerMeta):
     # global validation flag, override it for any child type or even certain
     # instance to disable validation
     keep_eye_on_me = True
-
-    def __setattr__(self, attr_name, attr_value):
-        # lookup the attribute handler directly from the self type
-        descriptor = getattr(self.__class__, attr_name, None)
-
-        if isinstance(descriptor, PredicateController):
-            if self.keep_eye_on_me:
-                # if found attribute handler belongs to the watch library,
-                # and validation is enabled, then pass the attr_value to
-                # the found handler object.
-                descriptor.__set__(self, attr_value)
-            else:
-                # if handler belongs to watch, but validation is disabled,
-                # then just set the value to the objects dict.
-                self.__dict__[attr_name] = attr_value
-        else:
-            # in that case someone else will handle this setattr call, probably
-            # object or some sort of mixin type.
-            super().__setattr__(attr_name, attr_value)
-
-        return None
 
     def generate_error_message(self, field_name, value):
         return (
