@@ -157,7 +157,7 @@ False
 ```
 
 ### Disabling `watch`
-You can disable validation for a particular set of types and even instances. It is done via manipulation of `is_active` attribute of pretty much any `watch` instance.
+You can disable validation for a particular set of types and even instances. It is done via manipulation of `keep_eye_on_me` attribute of pretty much any `watch` instance.
 ```python3
 >>> import watch
 >>> # foo accept no value whatsoever
@@ -168,7 +168,7 @@ You can disable validation for a particular set of types and even instances. It 
 >>> s.foo = 10
 AttributeError: Failed to set attribute 'foo' of object <SomeClass object at 0x7f...> to be 10.
 >>> # Disable validation for this particular instance
->>> s.is_active = False
+>>> s.keep_eye_on_me = False
 >>> # Now foo accepts values
 >>> s.foo = 10
 >>> # Note, that the flag value does not leak to other instances
