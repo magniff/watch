@@ -70,7 +70,7 @@ True
 >>> Just("hello").predicate(10)
 False
 ```
-It also can take a list of values as an itinialization set:
+It also can take a list of values as an initialization set:
 ```python3
 >>> Just("hello", "world").predicate("hello")
 True
@@ -79,7 +79,7 @@ True
 >>> Just("hello", "world").predicate("more")
 False
 ```
-- `InstanceOf` and `SubclassOf` are nary constructors do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
+- `InstanceOf` and `SubclassOf` are nary constructors that do exactly what you expect. The nice thing about builtin validators is that they are also controlled by `watch` on their own, e.g.
 ```python3
 >>> InstanceOf(int).predicate(10)
 True
@@ -157,7 +157,7 @@ False
 ```
 
 ### Disabling `watch`
-You can disable validation for a particular set of types and even instances. It is done via manipulation of `is_active` attribute of pretty much any `watch` instance.
+You can disable validation for a particular set of types and even instances. It is done via manipulation of `keep_eye_on_me` attribute of pretty much any `watch` instance.
 ```python3
 >>> import watch
 >>> # foo accept no value whatsoever
@@ -168,7 +168,7 @@ You can disable validation for a particular set of types and even instances. It 
 >>> s.foo = 10
 AttributeError: Failed to set attribute 'foo' of object <SomeClass object at 0x7f...> to be 10.
 >>> # Disable validation for this particular instance
->>> s.is_active = False
+>>> s.keep_eye_on_me = False
 >>> # Now foo accepts values
 >>> s.foo = 10
 >>> # Note, that the flag value does not leak to other instances
