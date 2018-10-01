@@ -4,6 +4,13 @@ import py.test
 import watch
 
 
+class Mixin:
+
+    def __setattr__(self, attr, value):
+        super().__setattr__("checkpoint", True)
+        super().__setattr__(attr, value)
+
+
 def test_pridicated_bind_to_watchme():
     """Tests, that using a watch's validators inside a class, that not being
     inherited from WatchMe base class generates an error.
@@ -31,40 +38,19 @@ def test_pridicated_bind_to_watchme():
         s.foo
 
 
-def test_mixin_cooperation_mixin_at_start():
+@py.test.mark.parametrize(
+    "type_to_check",
+    [
+        type("_", (Mixin, watch.WatchMe), {"foo": watch.builtins.Nothing}),
+        type("_", (watch.WatchMe, Mixin), {"foo": watch.builtins.Nothing}),
+    ]
+)
+def test_mixin_cooperation(type_to_check):
     """Tests, that watch works nicely with mixins
     """
 
-    class SomeMixin:
-        def __setattr__(self, attr, value):
-            super().__setattr__("checkpoint", True)
-            super().__setattr__(attr, value)
-
-    class WatchedClass(SomeMixin, watch.WatchMe):
-        foo = watch.builtins.Nothing
-
     with py.test.raises(AttributeError):
-        instance = WatchedClass()
-        instance.foo = "hello"
-
-    assert instance.checkpoint
-
-
-def test_mixin_cooperation_mixin_at_the_end():
-    """Tests, that AttributeError is not broken by introducing watch lib.
-    """
-
-    class SomeMixin:
-        def __setattr__(self, attr, value):
-            super().__setattr__("checkpoint", True)
-            super().__setattr__(attr, value)
-
-
-    class WatchedClass(watch.WatchMe, SomeMixin):
-        foo = watch.builtins.Nothing
-
-    with py.test.raises(AttributeError):
-        instance = WatchedClass()
+        instance = type_to_check()
         instance.foo = "hello"
 
     assert instance.checkpoint
