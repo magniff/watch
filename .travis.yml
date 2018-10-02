@@ -1,22 +1,25 @@
 language: python
 
 os:
-        - linux
-
+- linux
 python:
-        - 3.3
-        - 3.4
-        - 3.5
-        - 3.6
-        - pypy3
-
+- 3.3
+- 3.4
+- 3.5
+- 3.6
+- pypy3
 install:
-        - pip install codecov
-        - pip install pytest-cov
-        - python setup.py develop
-
+- pip install codecov
+- pip install pytest-cov
+- python setup.py develop
 script: py.test --cov=./watch/ tests/
-
 after_success:
-        - codecov
-
+- codecov
+deploy:
+  provider: pypi
+  user: magniff
+  on:
+    branch:
+      release
+  password:
+    secure: xCGMyi0CKC1k/s/tRNHLpyucqPUw5e354G/W/hcDwaaGhdAq+zYDwtdeRNRlxTull10Fwx8qxCk9v6xLnyebDu3LQEut2p1d3/YQaYIW5vVVVbWWYb7gqpOuvtQabjYRClTGL37YBxzwNszT8q4O2ABSDVwygpxSonT4TasFycEg4EOCt3JhZIEDnYuIy6KqvPZ4fPbwgpRvtF418voPlkvO3OnH9JagZaNXIVL+z9h2aPTpAaWGUj477T3zPtjsoc+/tN8Jg73sL1iIB5MJl6Sa//HEuAbIuJ7KJM//K8Wn9GSltqBHemfSTnkYMgcsLqDSD5nxQjPEhlP2CZlt6/AkVvAmkLQw/iKUdZC+yhrT7ZefeTqLRK9XaRt2g1lVuD8pRAv5JcabVIi8lbDtxXX28fGYVL65F5WC/TscOl8ExpDe0std1K+b4DEi3Sn5/5BnUE2J4Epk62wQrhdKa6ewyPzyWvXXo2x4LlPJax/xg0QpQ0feX2eqaM2Ov/7gJg0IZbQ8szH605E+FTLQdF00KdhIcPnon5YmYV+H4rcnCseLJb0ZHWJVjy87ZNcjdF5F2jtk9ARacTHFvKuQctkk0lgKsxwFYmy5e+qy9Kr9GymCHuhvwnN1RzZJ2858PNdYTz2ZiRT4quV+DSTX8yuYewIbeNO8DGNyzTmddq4=

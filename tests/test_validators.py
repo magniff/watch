@@ -213,7 +213,10 @@ MAGIC_CASES = [
     ),
     # OR
     (
-        Predicate(lambda value: value > 0) | Predicate(lambda value: value < 0),
+        (
+            Predicate(lambda value: value > 0) |
+            Predicate(lambda value: value < 0)
+        ),
         [
             (1, True),
             (-1, True),
