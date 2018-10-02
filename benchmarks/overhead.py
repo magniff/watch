@@ -1,7 +1,7 @@
 import perf
 
 
-from watch.builtins import InstanceOf, Container, Mapping
+from watch.builtins import InstanceOf, Container
 from watch import WatchMe
 
 

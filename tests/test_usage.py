@@ -5,6 +5,7 @@ import watch
 
 
 class Mixin:
+
     def __setattr__(self, attr, value):
         super().__setattr__("checkpoint", True)
         super().__setattr__(attr, value)

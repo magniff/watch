@@ -6,7 +6,7 @@ from itertools import chain
 import py.test
 
 
-from watch import WatchMe, Predicate
+from watch import Predicate
 from watch.builtins import (
     Not, Or, And, Xor, Whatever, Nothing, Container, InstanceOf, SubclassOf,
     Mapping, Just, GtThen, LtThen, LtEqThen, GtEqThen
@@ -149,7 +149,7 @@ CASES = [
             ("anna", True),
             ("", False),
             ("hello world", False),
-            ([1,0,1], False),
+            ([1, 0, 1], False),
             (10, False),
         ]
     ),
@@ -161,7 +161,7 @@ CASES = [
         ),
         [
             (
-                (1,2,3), True
+                (1, 2, 3), True
             ),
             # mappings are also considered to be containers
             (
@@ -172,9 +172,9 @@ CASES = [
                 (value for value in range(-10, 10)), False
             ),
             (
-                (value for value in range(1,10)), True
+                (value for value in range(1, 10)), True
             ),
-            ((1,2,3), True),
+            ((1, 2, 3), True),
         ]
     ),
     # nested container: list of tuples of ints
@@ -184,11 +184,11 @@ CASES = [
             container=list,
         ),
         [
-            ([(1,2,3)], True),
-            ([(1,2,3), (4,5,6)], True),
-            ([(1,2,3), (4,5,"hello")], False),
-            ([(1,2,3), [4,5,6]], False),
-            ([1,2,3,4], False),
+            ([(1, 2, 3)], True),
+            ([(1, 2, 3), (4, 5, 6)], True),
+            ([(1, 2, 3), (4, 5, "hello")], False),
+            ([(1, 2, 3), [4, 5, 6]], False),
+            ([1, 2, 3, 4], False),
         ]
     ),
 ]
@@ -317,7 +317,7 @@ MAGIC_CASES = [
     (
         Mapping(
             keys=InstanceOf(int),
-            values=Just(True)|Just(False),
+            values=Just(True) | Just(False),
             container=dict
         ),
         [

@@ -254,9 +254,6 @@ def test_desctiptor_field_names():
     class B(WatchMe):
         bar = Some
 
-    a = A()
-    b = B()
-
     assert A.foo is not B.bar
     assert A.foo.field_name == "foo"
     assert B.bar.field_name == "bar"

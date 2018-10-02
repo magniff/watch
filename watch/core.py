@@ -1,5 +1,4 @@
 import copy
-import abc
 
 
 # this should provide watch.builtins, which on its own
@@ -35,7 +34,6 @@ class AttributeDescriptor:
                 )
             )
             raise attribute_error from key_error
-
 
     def __set__(self, passed_instance, value):
         passed_instance.__dict__[self.field_name] = value
